@@ -279,6 +279,9 @@ lemma typed_smaller:
 
 subsection \<open>Assertions\<close>
 
+definition semi_typed where
+  "semi_typed \<Delta> A \<longleftrightarrow> (\<forall>\<omega>\<in>A. typed \<Delta> (stabilize \<omega>))"
+
 definition wf_set where
   "wf_set \<Delta> S \<longleftrightarrow> (\<forall>x \<in> S. wf_state \<Delta> x)"
 

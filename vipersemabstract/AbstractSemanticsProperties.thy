@@ -6,6 +6,33 @@ context typed_state
 begin
 
 
+lemma semi_typedE:
+  assumes "semi_typed \<Delta> A"
+      and "\<omega> \<in> A"
+    shows "typed \<Delta> (stabilize \<omega>)"
+  using assms(1) assms(2) semi_typed_def by blast
+
+lemma semi_typedI:
+  assumes "\<And>\<omega>. \<omega> \<in> A \<Longrightarrow> typed \<Delta> (stabilize \<omega>)"
+  shows "semi_typed \<Delta> A"
+  by (simp add: assms semi_typed_def)
+
+lemma semi_typed_star:
+  assumes "semi_typed \<Delta> A"
+      and "semi_typed \<Delta> B"
+    shows "semi_typed \<Delta> (A \<otimes> B)"
+proof (rule semi_typedI)
+  fix \<omega> assume asm0: "\<omega> \<in> A \<otimes> B"
+  then show "typed \<Delta> (stabilize \<omega>)"
+    by (meson assms(1) assms(2) semi_typedE stabilize_sum typed_sum x_elem_set_product)
+qed
+
+lemma typed_set_stabilize_semi_typed:
+  assumes "\<And>\<omega>. \<omega> \<in> A \<Longrightarrow> typed \<Delta> \<omega>"
+  shows "semi_typed \<Delta> (Stabilize A)"
+  apply (rule semi_typedI)
+  by (simp add: assms)
+
 lemma exists_assertI:
   assumes "v0 \<in> ty"
       and "get_store \<omega> x = Some v0"
@@ -587,37 +614,6 @@ proof (rule self_framingI)
       by (smt (verit, best) \<open>e a = Some v\<close> assign_var_state_def \<open>stabilize (set_store \<omega> ((get_store \<omega>)(x := get_store a x))) = a\<close> assms(2) image_eqI post_substitute_var_assert_def substitute_var_state_def wf_exp_stabilize)
   qed
 qed
-
-definition semi_typed where
-  "semi_typed \<Delta> A \<longleftrightarrow> (\<forall>\<omega>\<in>A. typed \<Delta> (stabilize \<omega>))"
-
-lemma semi_typedE:
-  assumes "semi_typed \<Delta> A"
-      and "\<omega> \<in> A"
-    shows "typed \<Delta> (stabilize \<omega>)"
-  using assms(1) assms(2) semi_typed_def by blast
-
-lemma semi_typedI:
-  assumes "\<And>\<omega>. \<omega> \<in> A \<Longrightarrow> typed \<Delta> (stabilize \<omega>)"
-  shows "semi_typed \<Delta> A"
-  by (simp add: assms semi_typed_def)
-
-lemma semi_typed_star:
-  assumes "semi_typed \<Delta> A"
-      and "semi_typed \<Delta> B"
-    shows "semi_typed \<Delta> (A \<otimes> B)"
-proof (rule semi_typedI)
-  fix \<omega> assume asm0: "\<omega> \<in> A \<otimes> B"
-  then show "typed \<Delta> (stabilize \<omega>)"
-    by (meson assms(1) assms(2) semi_typedE stabilize_sum typed_sum x_elem_set_product)
-qed
-
-lemma typed_set_stabilize_semi_typed:
-  assumes "\<And>\<omega>. \<omega> \<in> A \<Longrightarrow> typed \<Delta> \<omega>"
-  shows "semi_typed \<Delta> (Stabilize A)"
-  apply (rule semi_typedI)
-  by (simp add: assms)
-
 
 lemma wf_set_after_union:
   assumes "\<And>\<omega>. \<omega> \<in> S \<Longrightarrow> wf_set \<Delta> (f \<omega>)"

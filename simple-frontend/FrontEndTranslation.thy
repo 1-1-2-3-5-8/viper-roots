@@ -1203,8 +1203,8 @@ qed (simp_all add: invariant_translate_skip invariant_translate_free invariant_t
 
 
 lemma atrue_semi_typed:
-  "ConcreteSemantics.semi_typed (tcfe \<Delta> tys) (atrue \<Delta> tys)"
-  by (metis ConcreteSemantics.semi_typedI atrue_def comp_apply member_filter)
+  "TypedEqui.semi_typed (tcfe \<Delta> tys) (atrue \<Delta> tys)"
+  by (metis TypedEqui.semi_typedI atrue_def comp_apply member_filter)
 
 
 lemma t_entails_inhalify:
