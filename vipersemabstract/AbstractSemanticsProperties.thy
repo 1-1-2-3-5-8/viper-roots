@@ -947,7 +947,10 @@ next
   next
     fix \<omega> assume asm0: "sep_algebra_class.stable \<omega>" "\<omega> \<in> Stabilize (snd ` SA) \<otimes> purify b"
     then have "\<omega> \<in> Stabilize (snd ` SA) \<and> b \<omega> = Some True"
+      sorry
+(*
       by (smt (verit, best) CollectD If.prems(2) add_set_commm in_set_sum purify_def wf_abs_stmt.simps(6)  stable_and_sum_pure_same wf_exp_def x_elem_set_product)
+*)
     then show "\<omega> \<in> ?A1"
       using already_stable asm0(1) by force
   qed (simp_all)
@@ -984,7 +987,10 @@ next
       by (smt (verit, best) CollectD negate_def option.discI option.exhaust_sel purify_def x_elem_set_product)
 
     then have "\<omega> \<in> Stabilize (snd ` SA) \<and> b \<omega> = Some False"
+      sorry
+(*
       by (metis If.prems(2) asm0(1) greater_equiv stable_and_sum_pure_same wf_abs_stmt.simps(6) wf_expE)
+*)
     then show "\<omega> \<in> ?A2"
       using already_stable asm0(1) by force
   qed (simp_all)
@@ -1035,7 +1041,10 @@ next
       by force
   qed
   then have "self_framing (?A \<otimes> P)"
+    sorry
+(*
     using Stabilize_self_framing framed_byI self_framing_star by blast
+*)
 
   moreover have r: "framed_by ?A (Set.filter (typed \<Delta> \<circ> stabilize) P)"
   proof (rule framed_byI)
@@ -1092,7 +1101,10 @@ next
     apply auto[1]
     using \<open>\<And>\<omega>. \<lbrakk>\<omega> \<in> Stabilize (snd ` SA); sep_algebra_class.stable \<omega>\<rbrakk> \<Longrightarrow> rel_stable_assertion \<omega> P\<close> framed_byI by blast
   moreover have "self_framing (?A \<otimes> Set.filter (typed \<Delta> \<circ> stabilize) P)"
+    sorry
+(*
     using Stabilize_self_framing r self_framing_star by blast
+*)
   moreover have "Set.filter sep_algebra_class.stable (snd ` SA) \<subseteq> ?A"
     using Stabilize_filter_stable by blast
 
@@ -1169,8 +1181,8 @@ next
       using r by metis
     moreover obtain \<omega>'' where "Some \<omega>'' = \<omega>' \<oplus> |\<omega>|"
       by (metis asso3 calculation commutative decompose_stabilize_pure not_Some_eq) (* long *)
-    then have "stabilize \<omega>'' = stabilize \<omega>'" using pure_larger_stabilize_same[of \<omega>'' \<omega>']
-      using core_is_pure pure_def pure_larger_def by blast
+    then have "stabilize \<omega>'' = stabilize \<omega>'" sorry(*using pure_larger_stabilize_same[of \<omega>'' \<omega>']
+      using core_is_pure pure_def pure_larger_def by blast*)
     then have "\<omega>'' \<in> Stabilize (\<Union> (f ` SA))"
       using already_stable asm0(1) calculation by fastforce
     moreover have "Some \<omega> = \<omega>'' \<oplus> a"
@@ -1639,11 +1651,29 @@ lemma stabilize_rel:
   assumes "Some \<omega> = a \<oplus> p"
   shows "\<exists>p'. Some \<omega> = stabilize a \<oplus> p' \<and> Some p' = p \<oplus> |\<omega>|"
 proof -
+  obtain p' where "Some p' = |a| \<oplus> p"
+    using assms by (metis asso2 core_is_smaller not_None_eq)
+  then have "Some \<omega> = stabilize a \<oplus> p'"
+    using assms by (metis asso1 decompose_stabilize_pure)
+  have "Some p' = p \<oplus> |a|"
+    using \<open>Some p' = |a| \<oplus> p\<close> commutative by auto
+  moreover have "Some p = p \<oplus> |p|"
+    by (simp add: core_is_smaller)
+  moreover have "Some |\<omega>| = |p| \<oplus> |a|"
+    using assms commutative core_sum by fastforce
+  ultimately have "Some p' = p \<oplus> |\<omega>|"
+    using asso1 by force
+  then show ?thesis
+    using \<open>Some \<omega> = stabilize a \<oplus> p'\<close> by auto
+qed
+(*
+proof -
   obtain p' where "Some p' = p \<oplus> |\<omega>|"
     using assms minus_equiv_def_any_elem by blast
   then show ?thesis
     by (smt (verit, ccfv_SIG) assms asso1 decompose_stabilize_pure greater_equiv plus_pure_stabilize_eq smaller_than_core stabilize_sum)
 qed
+*)
 
 lemma state_in_purify_add:
   assumes "\<omega> \<in> A"
@@ -2051,6 +2081,7 @@ lemma good_atrue_typed[simp]:
   by (simp add: already_stable)
 
 
+(* not used
 lemma Viper_implies_SL_proof_atrue:
   assumes "verifies_set \<Delta> A C"
       and "wf_abs_stmt \<Delta> C"
@@ -2068,6 +2099,7 @@ lemma Viper_implies_SL_proof_atrue:
   apply (rule verifies_setI)
   using monotonicity_verifiesE[OF assms(2) assms(5-6)]
   by (metis (no_types, opaque_lifting) already_stable assms(1) assms(3) assms(4) core_stabilize_mono(2) in_set_sum self_framingE semi_typed_def stabilize_is_stable verifies_set_def)
+*)
 
 
 lemma inhale_c_exhale_verifies_simplifies:

@@ -1426,6 +1426,9 @@ definition stabilize2pre :: "'v virtual_state \<Rightarrow> 'v pre_virtual_state
 definition stabilize_virtual_state :: "'v virtual_state \<Rightarrow> 'v virtual_state" where
   "stabilize_virtual_state x = Abs_virtual_state (stabilize2pre x)"
 
+definition unit_virtual_state :: "'v virtual_state \<Rightarrow> 'v virtual_state" where
+  "unit_virtual_state x = stabilize |x|"
+
 lemma stabilize_wf:
   "wf_pre_virtual_state (stabilize2pre x)"
 proof -
@@ -1483,7 +1486,7 @@ lemma virtual_state_ext :
 instance proof
   fix x y a b :: "'a virtual_state"
 
-  show "sep_algebra_class.stable (stabilize x)"
+  show "\<And>z :: 'a virtual_state. sep_algebra_class.stable (stabilize z)"
     by (simp add: EquiSemAuxLemma.vstate_stabilize_structure(1) EquiSemAuxLemma.vstate_stabilize_structure(2) pperm_pnone_pgt stable_virtual_state_def restrict_map_def)
   show "sep_algebra_class.stable x \<Longrightarrow> stabilize x = x"
     apply (rule virtual_state_ext)
@@ -1491,18 +1494,19 @@ instance proof
     apply (rule ext)
     by (metis core_option.cases eq_snd_iff mem_Collect_eq restrict_in restrict_out)
 
-  show "Some x = stabilize x \<oplus> |x|"
+  show "\<And>z :: 'a virtual_state. Some z = stabilize z \<oplus> |z|"
   proof (rule plus_virtual_stateI)
-    show "Some (get_vh x) = get_vh (stabilize x) \<oplus> get_vh |x|"
+    fix z
+    show "Some (get_vh z) = get_vh (stabilize z) \<oplus> get_vh |z|"
     proof (rule plus_funI)
-      fix l show "Some (get_vh x l) = get_vh (stabilize x) l \<oplus> get_vh |x| l"
-        apply (cases "get_vh x l"; cases "get_vm x l > 0")
+      fix l show "Some (get_vh z l) = get_vh (stabilize z) l \<oplus> get_vh ( |z| ) l"
+        apply (cases "get_vh z l"; cases "get_vm z l > 0")
         using vstate_wf_imp apply blast
-        apply (metis EquiSemAuxLemma.gr_0_is_ppos EquiSemAuxLemma.vstate_stabilize_structure(1) \<open>sep_algebra_class.stable (stabilize x)\<close> core_is_pure core_option.simps(1) core_structure(2) stable_virtual_state_def)
+        apply (metis EquiSemAuxLemma.gr_0_is_ppos EquiSemAuxLemma.vstate_stabilize_structure(1) \<open>\<And>z :: 'a virtual_state. sep_algebra_class.stable (stabilize z)\<close> core_is_pure core_option.simps(1) core_structure(2) stable_virtual_state_def)
         apply (simp add: EquiSemAuxLemma.vstate_stabilize_structure(2) core_structure(2) plus_val_id restrict_map_def)
-        by (metis EquiSemAuxLemma.gr_0_is_ppos \<open>sep_algebra_class.stable (stabilize x)\<close> commutative core_structure(2) plus_option.simps(2) stable_virtual_state_def vstate_stabilize_structure(1))
+        by (metis (full_types) EquiSemAuxLemma.gr_0_is_ppos \<open>\<And>z :: 'a virtual_state. sep_algebra_class.stable (stabilize z)\<close> commutative core_structure(2) plus_option.simps(2) stable_virtual_state_def vstate_stabilize_structure(1))
     qed
-    show "Some (get_vm x) = get_vm (stabilize x) \<oplus> get_vm |x|"
+    show "Some (get_vm z) = get_vm (stabilize z) \<oplus> get_vm |z|"
       by (simp add: EquiSemAuxLemma.vstate_stabilize_structure(1) core_structure(1) zero_mask_identity)
   qed
 
@@ -1512,6 +1516,7 @@ instance proof
     apply (rule plus_funI)
     by (smt (verit) EquiSemAuxLemma.gr_0_is_ppos EquiViper.add_masks_def PosReal.ppos.rep_eq commutative core_is_pure core_option.simps(1) plus_funE plus_preal.rep_eq pperm_pnone_pgt val_option_sum vstate_wf_ppos)
 
+(*
   show "Some x = a \<oplus> stabilize |b| \<Longrightarrow> x = a"
     apply (clarsimp simp add: vstate_add_iff EquiSemAuxLemma.vstate_stabilize_structure
            EquiSemAuxLemma.core_structure ValueAndBasicState.zero_mask_def)
@@ -1525,6 +1530,39 @@ instance proof
     then show ?thesis
       using a2 by (metis EquiViper.virtual_state_ext option.inject zero_mask_identity)
   qed
+*)
+  show "Some x = a \<oplus> unit b \<Longrightarrow> x = a"
+    unfolding unit_virtual_state_def apply (clarsimp simp add: vstate_add_iff EquiSemAuxLemma.vstate_stabilize_structure
+           EquiSemAuxLemma.core_structure ValueAndBasicState.zero_mask_def)
+  proof -
+    assume a1: "Some (get_vh x) = get_vh a \<oplus> get_vh b |` (if PosReal.ppos 0 then UNIV else {})"
+    assume a2: "Some (get_vm x) = get_vm a \<oplus> zero_mask"
+    have "\<not> PosReal.ppos 0"
+      using EquiSemAuxLemma.gr_0_is_ppos by blast
+    then have "Some (get_vh a) = Some (get_vh x)"
+      using a1 by (simp add: empty_heap_def empty_heap_identity)
+    then show ?thesis
+      using a2 by (metis EquiViper.virtual_state_ext option.inject zero_mask_identity)
+  qed
+
+  show "stable (unit a)"
+    unfolding unit_virtual_state_def using \<open>\<And>z :: 'a virtual_state. sep_algebra_class.stable (stabilize z)\<close> by simp
+  have "|a| \<succeq> unit a"
+    unfolding greater_def unit_virtual_state_def using \<open>\<And>z :: 'a virtual_state. Some z = stabilize z \<oplus> |z|\<close> by auto
+  then obtain a' where "Some a' = a \<oplus> unit a"
+    unfolding unit_virtual_state_def using core_is_smaller smaller_compatible commutative by (metis defined_def option.collapse)
+  then have "a' \<succeq> a"
+    unfolding greater_def by auto
+  moreover have "a \<succeq> a'"
+    using \<open>|a| \<succeq> unit a\<close> \<open>Some a' = a \<oplus> unit a\<close> by (simp add: addition_bigger commutative core_is_smaller)
+  ultimately have "a = a'"
+    by (simp add: succ_antisym)
+  then show "Some a = a \<oplus> unit a"
+    using \<open>Some a' = a \<oplus> unit a\<close> by simp
+  have "pure (unit a)"
+    using \<open>|a| \<succeq> unit a\<close> core_is_pure pure_def pure_smaller by auto
+  then show "|unit a| = unit a"
+    by (metis max_projection_prop_pure_core mppI mpp_smaller succ_refl)
 qed
 
 end

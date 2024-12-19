@@ -449,6 +449,7 @@ lemma prove_in_up_close_core:
     shows "x \<in> up_close_core A"
   using assms(1) assms(2) assms(3) emp_core_def local.x_elem_set_product up_close_core_def by auto
 
+(*
 lemma stabilize_in_up_close_core :
    "stabilize x \<in> up_close_core A \<longleftrightarrow> stabilize x \<in> A" (is "?A \<longleftrightarrow> ?B")
 proof
@@ -469,6 +470,7 @@ lemma stable_in_up_close_core [simp] :
   assumes "stable \<omega>"
   shows "\<omega> \<in> up_close_core A \<longleftrightarrow> \<omega> \<in> A"
   by (metis already_stable assms stabilize_in_up_close_core)
+*)
 
 lemma up_close_core_id :
   "A \<subseteq> up_close_core A"
@@ -525,12 +527,38 @@ begin
 (* TODO: Where to put this? *)
 lemma stabilize_minus_pure :
   "stabilize (x \<ominus> |a| ) = stabilize x"
+(*
   by (metis commutative minus_default minus_equiv_def plus_pure_stabilize_eq)
+*)
+proof -
+  have "x \<ominus> |a| = x"
+  proof (cases "x \<succeq> |a|")
+    case True
+    then have "|x| \<succeq> |a|"
+      using local.max_projection_prop_def local.max_projection_prop_pure_core by auto
+    then have "x \<ominus> |a| \<succeq> x \<ominus> |x|"
+      using True local.max_projection_prop_pure_core local.minus_greater local.mpp_smaller by presburger
+    moreover have "x \<ominus> |x| = x"
+      by (metis local.asso1 local.core_is_pure local.minusI local.minus_default local.minus_equiv_def)
+    ultimately show ?thesis
+      by (simp add: True local.minus_smaller local.succ_antisym)
+  next
+    case False
+    then show ?thesis
+      by (simp add: local.minus_default)
+  qed
+  then show ?thesis
+    by simp
+qed
 
 subsubsection \<open>definitions\<close>
 
+(*
 definition emp :: "'a set" where
 "emp = {a. \<exists> b. a = stabilize |b| }"
+*)
+definition emp :: "'a set" where
+  "emp = { unit a | a. True }"
 
 definition bool_to_assertion :: "bool \<Rightarrow> 'a set" ("\<llangle>_\<rrangle>" [0] 81) where
 "bool_to_assertion b = (if b then emp else {})"
@@ -546,7 +574,10 @@ subsubsection \<open>emp\<close>
 lemma emp_star_right_id [simp] :
   "A \<otimes> emp = A"
   apply (clarsimp simp add:emp_def add_set_def)
+  using unit_emp unit_right_id by auto
+(*
   using stabilize_core_emp stabilize_core_right_id by (fastforce)
+*)
 
 lemma emp_star_left_id [simp] :
   "emp \<otimes> A = A"
@@ -555,8 +586,12 @@ lemma emp_star_left_id [simp] :
 lemma wand_emp [simp] :
   "(emp --\<otimes> B) = B"
   unfolding wand_def emp_def apply (auto)
+  using unit_right_id commutative apply auto[1]
+  using commutative unit_emp by fastforce
+(*
    apply (metis commutative stabilize_core_right_id)
   by (metis commutative stabilize_core_emp)
+*)
 
 subsubsection \<open>bool_to_assertion\<close>
 
@@ -616,6 +651,7 @@ lemma Stabilize_ex :
   "Stabilize (\<Union> x. A x) = (\<Union> x. Stabilize (A x))"
   by (auto simp add:Stabilize_def)
 
+(*
 lemma Stabilize_up_close_core :
   "Stabilize (up_close_core A) = Stabilize A" (is "?A = ?B")
 proof
@@ -624,6 +660,7 @@ proof
   show "?B \<subseteq> ?A"
     using local.up_close_core_id by force
 qed
+*)
 
 subsubsection \<open>Stable\<close>
 
@@ -639,7 +676,7 @@ lemma Stable_UNIV [simp] :
 lemma Stable_emp [simp] :
   "Stable emp"
   unfolding Stable_def Stabilize_def emp_def
-  using already_stable stabilize_is_stable by blast
+  using already_stable stabilize_is_stable local.unit_stable by auto
 
 lemma Stable_emp_core [simp] :
   "Stable emp_core"
@@ -680,6 +717,7 @@ lemma Stable_up_close_core :
   apply (rule Stable_star)
   by (simp_all)
 
+(* freshness setting: A = { (0, \<bottom>), (0, v) }, A \<otimes> emp_core = { (0, \<bottom>), (0, allocated), (0, v) } is Stable, x = (0, v) \<in> A but stabilize x = (0, allocated) \<notin> A
 lemma Stable_up_close_core_rev :
   "Stable (up_close_core A) \<Longrightarrow> Stable A"
   apply (simp add:Stable_def Stabilize_up_close_core)
@@ -688,6 +726,7 @@ lemma Stable_up_close_core_rev :
 lemma Stable_up_close_core_eq :
   "Stable (up_close_core A) = Stable A"
   using Stable_up_close_core Stable_up_close_core_rev by blast
+*)
 
 lemma Stable_ex :
   assumes "\<And> x. Stable (A x)"
@@ -703,12 +742,38 @@ lemma split_star_singleton_stabilize :
   "{\<omega>} = {stabilize \<omega>} \<otimes> {|\<omega>|}"
   by (simp add:sum_then_singleton[symmetric] decompose_stabilize_pure)
 
+lemma stable_sum_stabilize_adder:
+  assumes "Some x = a \<oplus> b"
+      and "stable x"
+    shows "Some x = stabilize a \<oplus> b"
+proof -
+  obtain x' where "Some x' = stabilize a \<oplus> b" "x \<succeq> x'"
+    using assms(1) compatible_smaller decompose_stabilize_pure greater_def by blast
+  moreover have "Some x = stabilize a \<oplus> stabilize b"
+    using assms stabilize_sum already_stable by fastforce
+  ultimately have "Some x' = x \<oplus> |b|"
+    using decompose_stabilize_pure[of b] asso1[of "stabilize a" "stabilize b" x "|b|" b] by simp
+  then have "x' \<succeq> x"
+    unfolding greater_def by auto
+  then have "x' = x"
+    using \<open>x \<succeq> x'\<close> succ_antisym by simp
+  then show ?thesis
+    using \<open>Some x' = stabilize a \<oplus> b\<close> by simp
+qed
+
 lemma star_to_singleton_stabilizeE :
   assumes "x \<in> A \<otimes> B"
   assumes "stable x"
   assumes "\<And> a. a \<in> A \<Longrightarrow> x \<in> {stabilize a} \<otimes> B \<Longrightarrow> P"
   shows "P"
 proof -
+  obtain a where "a \<in> A" "x \<in> {a} \<otimes> B"
+    using star_to_singletonE assms by blast
+  then have "x \<in> {stabilize a} \<otimes> B"
+    using assms(2) in_add_set stable_sum_stabilize_adder by auto
+  then show ?thesis
+    using \<open>a \<in> A\<close> assms(3) by simp
+(*
   obtain a where "a \<in> A" "x \<in> {a} \<otimes> B"
     using star_to_singletonE assms by blast
   from \<open>x \<in> {a} \<otimes> B\<close> have "x \<in> up_close_core ({stabilize a} \<otimes> B)"
@@ -724,6 +789,7 @@ proof -
   from this assms \<open>a \<in> A\<close> show "?thesis"
     (* TODO: Why does local.stable_in_up_close_core not work here? *)
     by (metis local.in_up_close_core_decompose local.stable_and_sum_pure_same) 
+*)
 qed
 
 lemma star_to_singleton_stableE :
@@ -733,6 +799,15 @@ lemma star_to_singleton_stableE :
   assumes "\<And> a. a \<in> A \<Longrightarrow> stable a \<Longrightarrow> x \<in> {a} \<otimes> B \<Longrightarrow> P"
   shows "P"
 proof -
+  obtain a where "a \<in> A" "x \<in> {a} \<otimes> B"
+    using star_to_singletonE assms by blast
+  then have "x \<in> {stabilize a} \<otimes> B"
+    using assms(2) in_add_set stable_sum_stabilize_adder by auto
+  moreover have "stabilize a \<in> A"
+    using \<open>a \<in> A\<close> assms(3) Stable_def in_Stabilize by blast
+  ultimately show ?thesis
+    using \<open>a \<in> A\<close> assms(4) already_stable by simp
+(*
   obtain a where "a \<in> A" "x \<in> {a} \<otimes> B"
     using star_to_singletonE assms by blast
   from \<open>x \<in> {a} \<otimes> B\<close> have "x \<in> up_close_core ({stabilize a} \<otimes> B)"
@@ -751,6 +826,7 @@ proof -
     subgoal by simp
     using \<open>x \<in> up_close_core ({stabilize a} \<otimes> B)\<close> assms
     using local.in_up_close_core_decompose local.stable_and_sum_pure_same by blast
+*)
 qed
 
 lemma Stable_star_singleton :
@@ -759,6 +835,7 @@ lemma Stable_star_singleton :
   shows "Stable (A \<otimes> B)"
 proof (rule StableI)
   fix x assume "x \<in> A \<otimes> B"
+(*
   (* TODO: use star_to_singleton_stableE to simplify this proof? *)
   then obtain a where "x \<in> {a} \<otimes> B" "a \<in> A" using star_to_singletonE by blast
   then have "Stable ({stabilize a} \<otimes> B)" using stabilize_is_stable Stable_def assms in_Stabilize by blast
@@ -776,6 +853,27 @@ proof (rule StableI)
     using Stable_def \<open>Stable ({stabilize a} \<otimes> B)\<close>
     using Stabilize_up_close_core Stable_up_close_core
     by (metis in_Stabilize subsetD)
+  show "stabilize x \<in> A \<otimes> B"
+    apply (rule star_to_singletonI[of "stabilize a"])
+    using assms(1) \<open>a \<in> A\<close> Stable_def apply (fastforce)
+    by (rule \<open>stabilize (x) \<in> {stabilize a} \<otimes> B\<close>)
+*)
+  then obtain a b where "Some x = a \<oplus> b" "a \<in> A" "b \<in> B"
+    using in_add_set by auto
+  then have "Stable ({stabilize a} \<otimes> B)" using stabilize_is_stable Stable_def assms in_Stabilize by blast
+  obtain x' where "Some x' = stabilize a \<oplus> b"
+    using \<open>Some x = a \<oplus> b\<close> decompose_stabilize_pure compatible_smaller greater_def by blast
+  then have "x' \<in> {stabilize a} \<otimes> B"
+    using \<open>b \<in> B\<close> by (simp add: local.is_in_set_sum)
+  then have "stabilize x' \<in> {stabilize a} \<otimes> B"
+    using \<open>Stable ({stabilize a} \<otimes> B)\<close> Stable_def in_Stabilize by blast
+  moreover have "stabilize x' = stabilize x"
+    apply (subst option.inject[symmetric])
+    apply (simp add: \<open>Some x' = stabilize a \<oplus> b\<close> stabilize_sum[of x' "stabilize a" b])
+    apply (simp add: \<open>Some x = a \<oplus> b\<close> stabilize_sum)
+    by (simp add: already_stable)
+  ultimately have "stabilize x \<in> {stabilize a} \<otimes> B"
+    by simp
   show "stabilize x \<in> A \<otimes> B"
     apply (rule star_to_singletonI[of "stabilize a"])
     using assms(1) \<open>a \<in> A\<close> Stable_def apply (fastforce)
@@ -868,6 +966,7 @@ definition entails where
 definition pure_Stabilize where
   "pure_Stabilize b = { \<omega> |\<omega>. b \<omega> = Some True \<and> pure \<omega> }"
 
+(*
 lemma pure_Stabilize_eq:
   assumes "wf_exp b"
       and "self_framing A" (* or wf_assertion A *)
@@ -894,6 +993,7 @@ proof
       by (smt (verit, ccfv_threshold) CollectI \<open>x \<in> Set.filter (\<lambda>\<omega>. b \<omega> = Some True) A\<close> assms(1) max_projection_prop_def max_projection_prop_pure_core member_filter pure_Stabilize_def wf_exp_def x_elem_set_product)
   qed
 qed
+*)
 
 definition self_framing_on where
   "self_framing_on A P \<longleftrightarrow> (\<forall>\<omega> \<in> A. stabilize \<omega> \<in> P \<longleftrightarrow> \<omega> \<in> P)"
@@ -930,6 +1030,7 @@ lemma in_starE:
     shows "P"
   by (meson assms(1) assms(2) x_elem_set_product)
 
+(* no counterex yet
 lemma self_framing_actual_star:
   assumes "self_framing A"
       and "self_framing B"
@@ -940,7 +1041,9 @@ lemma self_framing_actual_star:
    apply (meson assms(1) assms(2) local.stabilize_sum local.x_elem_set_product self_framingE)
   apply (erule in_starE)
   by (smt (verit, ccfv_SIG) assms(1) in_Stabilize local.pure_larger_stabilize local.pure_larger_stabilize_same local.pure_larger_sum local.x_elem_set_product self_framing_eq)
+*)
 
+(* A = { (0, \<bottom>) }, P = { (0, allocated) }, x = (0, v), stabilize x = (0, allocated) \<in> A \<otimes> P = P but x \<notin> A \<otimes> P
 lemma self_framing_star:
   assumes "self_framing A"
       and "framed_by A P"
@@ -976,6 +1079,7 @@ proof (rule self_framingI)
       using x_elem_set_product by blast
   qed
 qed
+*)
 
 
 lemma framed_by_negate:
@@ -1043,6 +1147,7 @@ proof (rule self_framingI)
     by (metis IntD1 IntD2 IntI assms(1) assms(2) self_framing_def self_framing_on_def)
 qed
 
+(*
 lemma wf_exp_framed_by:
   assumes "wf_exp b"
       and "framed_by_exp A b"
@@ -1064,6 +1169,7 @@ proof (rule self_framingI)
       using assms(1) assms(3) pure_Stabilize_eq self_framing_def wf_exp_stabilize by fastforce
   qed
 qed
+*)
 
 lemma entailsI:
   assumes "\<And>\<omega>. \<omega> \<in> A \<Longrightarrow> \<omega> \<in> B"
