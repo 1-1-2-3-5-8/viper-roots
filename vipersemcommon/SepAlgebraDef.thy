@@ -849,7 +849,7 @@ end
 
 section \<open>Separation algebra\<close>
 
-class sep_algebra = pcm_with_core +
+class weak_sep_algebra = pcm_with_core +
 
   fixes stable :: "'a \<Rightarrow> bool"
   fixes stabilize :: "'a \<Rightarrow> 'a"
@@ -864,7 +864,7 @@ class sep_algebra = pcm_with_core +
     and unit_core: "|unit a| = unit a"
     and unit_stable: "stable (unit a)"
 (*
-    \<comment> \<open>For proving star preserves self-framedness. strong_sep_algebra already satisfies this assumption by picking \<^term>\<open>a' = a\<close> and \<^term>\<open>Some b' = b \<oplus> |x|\<close>.\<close>
+    \<comment> \<open>For proving star preserves self-framedness. strong_sep_algebra already satisfies this assumption by picking \<^term>\<open>a' = a\<close> and \<^term>\<open>Some b' = b \<oplus> |x|\<close>. Weakening it to \<^prop>\<open>Some (stabilize x) = a \<oplus> b \<Longrightarrow> \<exists>a'. Some x = a' \<oplus> b \<and> stabilize a = stabilize a'\<close> is not correct (counterexample: freshness setting x = (0, v), a = (0, \<bottom>)).\<close>
     and stabilize_redecompose: "Some (stabilize x) = a \<oplus> b \<Longrightarrow> \<exists>a' b'. Some x = a' \<oplus> b' \<and> stabilize a = stabilize a' \<and> stabilize b = stabilize b'"
 *)
 
@@ -920,13 +920,6 @@ proof -
     by (metis local.asso1 local.commutative local.pure_stable pure_larger_def)
 qed
 
-(*
-lemma pure_larger_stabilize_same:
-  assumes "pure_larger a b"
-  shows "stabilize a = stabilize b"
-  by (metis assms local.max_projection_prop_pure_core local.mppI local.mpp_smaller local.stabilize_core_emp local.stabilize_sum local.succ_refl pure_larger_def)
-*)
-
 lemma pure_larger_sum:
   assumes "Some x = a \<oplus> b"
       and "pure_larger x' x"
@@ -967,30 +960,6 @@ lemma obtain_pure_remainder:
   assumes "a \<succeq> b"
   shows "\<exists>r. Some a = r \<oplus> b \<and> |r| = |a|"
   using assms local.commutative local.minus_core local.minus_equiv_def by auto
-
-(*
-lemma plus_pure_stabilize_eq :
-  "Some a = b \<oplus> |c| \<Longrightarrow> stabilize a = stabilize b"
-  using stabilize_core_emp stabilize_sum by blast
-
-lemma stable_and_sum_pure_same:
-  assumes "Some x = a \<oplus> p"
-      and "stable x"
-      and "pure p"
-    shows "x = a"
-proof -
-  have "|x| \<succeq> p"
-    using assms(1) assms(3) greater_equiv max_projection_propE(3) max_projection_prop_pure_core by blast
-  then show ?thesis
-    by (metis assms(1) assms(2) assms(3) local.already_stable local.greater_def local.max_projection_prop_def local.succ_antisym max_projection_prop_stable_stabilize pure_larger_def pure_larger_stabilize_same)
-qed
-
-lemma pure_large_stable_same:
-  assumes "pure_larger x a"
-      and "stable x"
-    shows "x = a"
-  using assms(1) assms(2) pure_larger_def stable_and_sum_pure_same by blast
-*)
 
 lemma stabilize_core_right_id :
   "Some a = a \<oplus> stabilize |a|"
@@ -1046,121 +1015,23 @@ lemma wf_exp_combinedE:
 
 end
 
-(*
-class strong_sep_algebra = pcm_with_core +
 
-  fixes stable :: "'a \<Rightarrow> bool"
-  fixes stabilize :: "'a \<Rightarrow> 'a"
-
-  assumes already_stable: "stable x \<Longrightarrow> stabilize x = x"
-    and stabilize_is_stable[simp]: "stable (stabilize x)"
-    and stabilize_sum: "Some x = a \<oplus> b \<Longrightarrow> Some (stabilize x) = stabilize a \<oplus> stabilize b"
-    and decompose_stabilize_pure: "Some x = stabilize x \<oplus> |x|"
-    and stabilize_core_emp : "Some a = b \<oplus> stabilize |c| \<Longrightarrow> a = b"
-
-
-
+class sep_algebra = weak_sep_algebra +
+  assumes unit_is_stabilize_core[simp]: "unit a = stabilize |a|"
 begin
 
-definition stable_rel :: "'a \<Rightarrow> 'a \<Rightarrow> bool" where
-  "stable_rel a b = (\<forall>c. a \<oplus> b = Some c \<longrightarrow> stable c)"
-
-lemma stable_relI:
-  assumes "\<And>c. a \<oplus> b = Some c \<Longrightarrow> stable c"
-  shows "stable_rel a b"
-  by (simp add: assms stable_rel_def)
-
-lemma stabilize_mono: "x \<succeq> a \<Longrightarrow> stabilize x \<succeq> stabilize a"
-  using local.greater_equiv local.stabilize_sum by blast
-
-lemma max_projection_prop_stable_stabilize:
-  "max_projection_prop stable stabilize"
-  by (metis local.already_stable local.commutative local.decompose_stabilize_pure local.greater_equiv local.max_projection_propI local.stabilize_is_stable stabilize_mono)
-
-lemma core_stabilize_mono:
-  assumes "a \<succeq> b"
-    shows "core a \<succeq> core b"
-      and "stabilize a \<succeq> stabilize b"
-  using assms max_projection_prop_pure_core mpp_mono apply blast  
-  using assms max_projection_prop_stable_stabilize mpp_mono by blast
-
-
-lemma stable_sum:
-  assumes "stable a"
-      and "stable b"
-      and "Some x = a \<oplus> b"
-    shows "stable x"
-  by (metis already_stable assms(1) assms(2) assms(3) option.sel stabilize_is_stable stabilize_sum)
-
-definition pure_larger where
-  "pure_larger a b \<longleftrightarrow> (\<exists>r. pure r \<and> Some a = b \<oplus> r)"
-
-lemma pure_larger_trans:
-  assumes "pure_larger a b"
-      and "pure_larger b c"
-    shows "pure_larger a c"
-proof -
-  obtain r1 where "Some a = b \<oplus> r1" "pure r1"
-    using assms(1) pure_larger_def by blast
-  moreover obtain r2 where "Some b = c \<oplus> r2" "pure r2"
-    using assms(2) pure_larger_def by blast
-  moreover obtain r where "Some r = r1 \<oplus> r2"
-    by (metis calculation(1) calculation(3) local.asso3 local.commutative not_Some_eq)
-  ultimately show ?thesis
-    by (metis local.asso1 local.commutative local.pure_stable pure_larger_def)
-qed
+lemma stabilize_core_emp:
+  "Some a = b \<oplus> stabilize |c| \<Longrightarrow> a = b"
+  using unit_emp by simp
 
 lemma pure_larger_stabilize_same:
   assumes "pure_larger a b"
   shows "stabilize a = stabilize b"
   by (metis assms local.max_projection_prop_pure_core local.mppI local.mpp_smaller local.stabilize_core_emp local.stabilize_sum local.succ_refl pure_larger_def)
 
-lemma pure_larger_sum:
-  assumes "Some x = a \<oplus> b"
-      and "pure_larger x' x"
-    shows "\<exists>a'. pure_larger a' a \<and> Some x' = a' \<oplus> b"
-proof -
-  obtain p where "Some x' = x \<oplus> p" "pure p"
-    using assms(2) pure_larger_def by auto
-  then obtain a' where "Some a' = a \<oplus> p"
-    by (metis assms(1) domD domIff local.asso2 local.commutative)
-  then have "Some x' = a' \<oplus> b"
-    by (metis \<open>Some x' = x \<oplus> p\<close> assms(1) local.asso1 local.commutative)
-  then show ?thesis
-    using \<open>Some a' = a \<oplus> p\<close> \<open>pure p\<close> pure_larger_def by blast
-qed
-
-lemma stabilize_sum_of_stable:
-  assumes "stable x"
-      and "Some x = a \<oplus> b"
-    shows "Some x = stabilize a \<oplus> stabilize b"
-  using already_stable assms(1) assms(2) stabilize_sum by fastforce
-
-lemma stabilize_sum_result_stable:
-  assumes "Some x = a \<oplus> b"
-      and "stable x"
-    shows "Some x = stabilize a \<oplus> b"
-proof -
-  have "Some x = stabilize a \<oplus> stabilize b"
-    using assms(1) assms(2) stabilize_sum_of_stable by blast
-  moreover have "Some x = x \<oplus> |b|"
-    by (metis assms(1) local.asso1 local.core_is_smaller)
-  moreover have "Some b = stabilize b \<oplus> |b|"
-    by (simp add: decompose_stabilize_pure)
-  ultimately show ?thesis
-    by (metis local.asso1)
-qed
-
-lemma obtain_pure_remainder:
-  assumes "a \<succeq> b"
-  shows "\<exists>r. Some a = r \<oplus> b \<and> |r| = |a|"
-  using assms local.commutative local.minus_core local.minus_equiv_def by auto
-
-
 lemma plus_pure_stabilize_eq :
   "Some a = b \<oplus> |c| \<Longrightarrow> stabilize a = stabilize b"
   using stabilize_core_emp stabilize_sum by blast
-
 
 lemma stable_and_sum_pure_same:
   assumes "Some x = a \<oplus> p"
@@ -1180,60 +1051,7 @@ lemma pure_large_stable_same:
     shows "x = a"
   using assms(1) assms(2) pure_larger_def stable_and_sum_pure_same by blast
 
-lemma stabilize_core_right_id :
-  "Some a = a \<oplus> stabilize |a|"
-  by (metis local.asso1 local.commutative local.core_is_smaller local.decompose_stabilize_pure)
-
-subsection \<open>Expressions\<close>
-
-definition wf_exp where
-  "wf_exp e \<longleftrightarrow> (\<forall>a b v. a \<succeq> b \<and> e b = Some v \<longrightarrow> e a = Some v) \<and> (\<forall>a. e a = e |a| )"
-
-lemma wf_expI:
-  assumes "\<And>a. e a = e |a|"
-      and "\<And>a b v. a \<succeq> b \<and> e b = Some v \<Longrightarrow> e a = Some v"
-    shows "wf_exp e"
-  using assms(1) assms(2) wf_exp_def by blast
-
-lemma wf_expE:
-  assumes "wf_exp e"
-      and "a \<succeq> b"
-      and "e b = Some v"
-    shows "e a = Some v"
-  by (meson assms(1) assms(2) assms(3) wf_exp_def)
-
-lemma wf_exp_coreE:
-  assumes "wf_exp e"
-  shows "e a = e |a|"
-  by (meson assms wf_exp_def)
-
-definition negate where
-  "negate b \<omega> = (if b \<omega> = None then None else Some (\<not> (the (b \<omega>))))"
-
-lemma wf_exp_negate:
-  assumes "wf_exp b"
-  shows "wf_exp (negate b)"
-  by (smt (verit, del_insts) assms negate_def option.collapse wf_exp_def)
-
-lemma wf_exp_stabilize:
-  assumes "e (stabilize \<omega>) = Some v"
-      and "wf_exp e"
-    shows "e \<omega> = Some v"
-  by (meson assms(1) assms(2) decompose_stabilize_pure greater_def wf_exp_def)
-
-lemma pure_larger_stabilize:
-  "pure_larger \<omega> (stabilize \<omega>)"
-  by (metis decompose_stabilize_pure max_projection_prop_def max_projection_prop_pure_core pure_larger_def)
-
-lemma wf_exp_combinedE:
-  assumes "wf_exp e"
-      and "e \<omega> = Some v"
-      and "|\<omega>'| \<succeq> |\<omega>|"
-    shows "e \<omega>' = Some v"
-  using assms(1) assms(2) assms(3) wf_expE wf_exp_coreE by fastforce
-
 end
-*)
 
 
 end

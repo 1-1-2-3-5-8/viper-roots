@@ -961,7 +961,7 @@ section \<open>Instantiations of SepAlgebra\<close>
 
 subsection \<open>Agreement\<close>
 
-instantiation agreement :: (type) sep_algebra
+instantiation agreement :: (type) weak_sep_algebra
 begin
 
 definition stable_agreement :: "'a agreement \<Rightarrow> bool" where
@@ -976,18 +976,14 @@ definition unit_agreement :: "'a agreement \<Rightarrow> 'a agreement" where
 instance proof
   fix a b c x :: "'a agreement"
 
-  show "sep_algebra_class.stable (stabilize x)"
+  show "weak_sep_algebra_class.stable (stabilize x)"
     by (simp add: stable_agreement_def)
   show "Some x = a \<oplus> b \<Longrightarrow> Some (stabilize x) = stabilize a \<oplus> stabilize b"
     by (simp add: stabilize_agreement_def)
   show "Some x = stabilize x \<oplus> |x|"
     by (simp add: core_is_smaller stabilize_agreement_def)
-  show "sep_algebra_class.stable x \<Longrightarrow> stabilize x = x"
+  show "weak_sep_algebra_class.stable x \<Longrightarrow> stabilize x = x"
     by (simp add: stabilize_agreement_def)
-(*
-  show "Some a = b \<oplus> stabilize |c| \<Longrightarrow> a = b"
-    by (metis option.distinct(1) plus_agreement_def plus_option_Some_None)
-*)
   show "Some a = b \<oplus> unit c \<Longrightarrow> a = b"
     by (simp add: agreement.expand plus_AgE)
   show "Some a = a \<oplus> unit a"
@@ -1001,6 +997,16 @@ qed
 
 end
 
+instantiation agreement :: (type) sep_algebra
+begin
+
+instance proof
+  show "\<And>a :: 'a agreement. unit a = stabilize |a|"
+    unfolding core_agreement_def stabilize_agreement_def unit_agreement_def by simp
+qed
+
+end
+
 lemma stabilize_ag:
   "stabilize (Ag x) = Ag x"
   by (simp add: stabilize_agreement_def)
@@ -1008,7 +1014,7 @@ lemma stabilize_ag:
 subsection \<open>Product\<close>
 
 
-instantiation prod :: (sep_algebra, sep_algebra) sep_algebra
+instantiation prod :: (weak_sep_algebra, weak_sep_algebra) weak_sep_algebra
 begin
 
 definition stabilize_prod :: "'a \<times> 'b \<Rightarrow> 'a \<times> 'b" where
@@ -1022,10 +1028,10 @@ definition unit_prod :: "'a \<times> 'b \<Rightarrow> 'a \<times> 'b" where
 
 instance
 proof
-  fix x a b c:: "'a :: sep_algebra \<times> 'b :: sep_algebra"
-  show "sep_algebra_class.stable x \<Longrightarrow> stabilize x = x"
+  fix x a b c:: "'a :: weak_sep_algebra \<times> 'b :: weak_sep_algebra"
+  show "weak_sep_algebra_class.stable x \<Longrightarrow> stabilize x = x"
     by (simp add: SepAlgebra.stable_prod_def already_stable stabilize_prod_def)
-  show "sep_algebra_class.stable (stabilize x)"
+  show "weak_sep_algebra_class.stable (stabilize x)"
     by (simp add: SepAlgebra.stable_prod_def stabilize_prod_def)
   show "Some x = stabilize x \<oplus> |x|"
     by (simp add: core_def decompose_stabilize_pure plus_prodI stabilize_prod_def)
@@ -1041,7 +1047,7 @@ proof
   then show "Some (stabilize x) = stabilize a \<oplus> stabilize b"
     by (simp add: plus_prodI stabilize_prod_def stabilize_sum)
 next
-  fix a b c:: "'a :: sep_algebra \<times> 'b :: sep_algebra"
+  fix a b c:: "'a :: weak_sep_algebra \<times> 'b :: weak_sep_algebra"
   assume "Some a = b \<oplus> unit c"
   then have "fst a = fst b \<and> snd a = snd b"
     by (metis (mono_tags, lifting) fst_conv plus_prodE snd_conv unit_emp unit_prod_def)
@@ -1051,8 +1057,18 @@ qed
 
 end
 
+instantiation prod :: (sep_algebra, sep_algebra) sep_algebra
+begin
 
-instantiation "fun" :: (type, sep_algebra) sep_algebra
+instance proof
+  show "\<And>a :: ('a :: sep_algebra) \<times> ('b :: sep_algebra). unit a = stabilize |a|"
+    unfolding unit_prod_def stabilize_prod_def core_def by simp
+qed
+
+end
+
+
+instantiation "fun" :: (type, weak_sep_algebra) weak_sep_algebra
 begin
 
 definition stabilize_fun: "stabilize_fun f l = stabilize  (f l)"
@@ -1063,8 +1079,8 @@ definition unit_fun: "unit_fun f l = unit (f l)"
 
 instance
 proof
-  fix x a b c :: "'a \<Rightarrow> 'b :: sep_algebra"
-  show "sep_algebra_class.stable (stabilize x)"
+  fix x a b c :: "'a \<Rightarrow> 'b :: weak_sep_algebra"
+  show "weak_sep_algebra_class.stable (stabilize x)"
     by (simp add: stabilize_fun stable_fun)
   show "Some x = a \<oplus> b \<Longrightarrow> Some (stabilize x) = stabilize a \<oplus> stabilize b"
     by (smt (verit, ccfv_SIG) plus_funE plus_funI stabilize_fun stabilize_sum)
@@ -1078,12 +1094,23 @@ proof
     by (metis core_is_pure core_max max_projection_prop_pure_core mppI mpp_smaller positivity pure_def succ_refl)
   show "stable (unit a)"
     by (simp add: stable_fun unit_fun unit_stable)
-  assume "sep_algebra_class.stable x"
+  assume "weak_sep_algebra_class.stable x"
   show "stabilize x = x"
   proof (rule ext)
     fix l show "stabilize x l = x l"
-      by (metis \<open>sep_algebra_class.stable x\<close> already_stable stabilize_fun stable_fun)
+      by (metis \<open>weak_sep_algebra_class.stable x\<close> already_stable stabilize_fun stable_fun)
   qed
+qed
+
+end
+
+instantiation "fun" :: (type, sep_algebra) sep_algebra
+begin
+
+instance proof
+  show "\<And>a :: 'a \<Rightarrow> ('b :: sep_algebra). unit a = stabilize |a|"
+    apply (rule ext)
+    unfolding unit_fun stabilize_fun core_fun by simp
 qed
 
 end
@@ -1155,7 +1182,7 @@ qed
 end
 
 
-instantiation PermValue :: (pos_perm, type) sep_algebra
+instantiation PermValue :: (pos_perm, type) weak_sep_algebra
 begin
 
 fun stable_PermValue :: "('a, 'b) PermValue \<Rightarrow> bool" where
@@ -1171,9 +1198,9 @@ definition unit_PermValue :: "('a, 'b) PermValue \<Rightarrow> ('a, 'b) PermValu
 
 instance proof
   fix x a b c :: "('a, 'b) PermValue"
-  show "sep_algebra_class.stable x \<Longrightarrow> stabilize x = x"
+  show "weak_sep_algebra_class.stable x \<Longrightarrow> stabilize x = x"
     by (metis stabilize_PermValue.elims stable_PermValue.simps(2))
-  show "sep_algebra_class.stable (stabilize x)"
+  show "weak_sep_algebra_class.stable (stabilize x)"
     by (metis SepAlgebra.stable_PermValue.simps(1) stabilize_PermValue.elims stable_PermValue.simps(2))
   show "Some x = a \<oplus> b \<Longrightarrow> Some (stabilize x) = stabilize a \<oplus> stabilize b"
     apply (cases a; cases b)
@@ -1182,7 +1209,7 @@ instance proof
 
 
   show "Some x = stabilize x \<oplus> |x|"
-    by (metis \<open>sep_algebra_class.stable x \<Longrightarrow> stabilize x = x\<close> core_PermValue.simps(2) core_is_smaller plus_PermValue.simps(1) pperm_pnone_pgt stabilize_PermValue.simps(2) stable_PermValue.elims(3))
+    by (metis \<open>weak_sep_algebra_class.stable x \<Longrightarrow> stabilize x = x\<close> core_PermValue.simps(2) core_is_smaller plus_PermValue.simps(1) pperm_pnone_pgt stabilize_PermValue.simps(2) stable_PermValue.elims(3))
 
   show "Some a = b \<oplus> unit c \<Longrightarrow> a = b"
     by (simp add: commutative unit_PermValue_def)
@@ -1192,10 +1219,16 @@ instance proof
     by (simp add: unit_PermValue_def)
   show "stable (unit a)"
     by (simp add: unit_PermValue_def)
-(*
-  show "Some a = b \<oplus> stabilize |c| \<Longrightarrow> a = b"
-    by (metis SepAlgebra.stabilize_PermValue.simps(2) commutative core_PermValue.elims option.inject plus_PermValue.simps(1) pperm_pgt_pnone stabilize_PermValue.simps(1))
-*)
+qed
+
+end
+
+instantiation PermValue :: (pos_perm, type) sep_algebra
+begin
+
+instance proof
+  show "\<And>a :: ('a :: pos_perm, 'b) PermValue. unit a = stabilize |a|"
+    unfolding unit_PermValue_def by (metis core_PermValue.elims order_less_imp_not_eq2 stabilize_PermValue.simps(1) stabilize_PermValue.simps(2))
 qed
 
 end

@@ -1412,7 +1412,7 @@ lemma plus_virtual_stateI:
     shows "Some \<phi> = a \<oplus> b"
   using assms(1) assms(2) vstate_add_iff by blast
 
-instantiation virtual_state :: (type) sep_algebra
+instantiation virtual_state :: (type) weak_sep_algebra
 begin
 
 definition u_virtual_state where "u_virtual_state = Abs_virtual_state uuu"
@@ -1486,9 +1486,9 @@ lemma virtual_state_ext :
 instance proof
   fix x y a b :: "'a virtual_state"
 
-  show "\<And>z :: 'a virtual_state. sep_algebra_class.stable (stabilize z)"
+  show "\<And>z :: 'a virtual_state. weak_sep_algebra_class.stable (stabilize z)"
     by (simp add: EquiSemAuxLemma.vstate_stabilize_structure(1) EquiSemAuxLemma.vstate_stabilize_structure(2) pperm_pnone_pgt stable_virtual_state_def restrict_map_def)
-  show "sep_algebra_class.stable x \<Longrightarrow> stabilize x = x"
+  show "weak_sep_algebra_class.stable x \<Longrightarrow> stabilize x = x"
     apply (rule virtual_state_ext)
      apply (simp_all add: EquiSemAuxLemma.vstate_stabilize_structure stable_virtual_state_def)
     apply (rule ext)
@@ -1502,9 +1502,9 @@ instance proof
       fix l show "Some (get_vh z l) = get_vh (stabilize z) l \<oplus> get_vh ( |z| ) l"
         apply (cases "get_vh z l"; cases "get_vm z l > 0")
         using vstate_wf_imp apply blast
-        apply (metis EquiSemAuxLemma.gr_0_is_ppos EquiSemAuxLemma.vstate_stabilize_structure(1) \<open>\<And>z :: 'a virtual_state. sep_algebra_class.stable (stabilize z)\<close> core_is_pure core_option.simps(1) core_structure(2) stable_virtual_state_def)
+        apply (metis EquiSemAuxLemma.gr_0_is_ppos EquiSemAuxLemma.vstate_stabilize_structure(1) \<open>\<And>z :: 'a virtual_state. weak_sep_algebra_class.stable (stabilize z)\<close> core_is_pure core_option.simps(1) core_structure(2) stable_virtual_state_def)
         apply (simp add: EquiSemAuxLemma.vstate_stabilize_structure(2) core_structure(2) plus_val_id restrict_map_def)
-        by (metis (full_types) EquiSemAuxLemma.gr_0_is_ppos \<open>\<And>z :: 'a virtual_state. sep_algebra_class.stable (stabilize z)\<close> commutative core_structure(2) plus_option.simps(2) stable_virtual_state_def vstate_stabilize_structure(1))
+        by (metis (full_types) EquiSemAuxLemma.gr_0_is_ppos \<open>\<And>z :: 'a virtual_state. weak_sep_algebra_class.stable (stabilize z)\<close> commutative core_structure(2) plus_option.simps(2) stable_virtual_state_def vstate_stabilize_structure(1))
     qed
     show "Some (get_vm z) = get_vm (stabilize z) \<oplus> get_vm |z|"
       by (simp add: EquiSemAuxLemma.vstate_stabilize_structure(1) core_structure(1) zero_mask_identity)
@@ -1546,7 +1546,7 @@ instance proof
   qed
 
   show "stable (unit a)"
-    unfolding unit_virtual_state_def using \<open>\<And>z :: 'a virtual_state. sep_algebra_class.stable (stabilize z)\<close> by simp
+    unfolding unit_virtual_state_def using \<open>\<And>z :: 'a virtual_state. weak_sep_algebra_class.stable (stabilize z)\<close> by simp
   have "|a| \<succeq> unit a"
     unfolding greater_def unit_virtual_state_def using \<open>\<And>z :: 'a virtual_state. Some z = stabilize z \<oplus> |z|\<close> by auto
   then obtain a' where "Some a' = a \<oplus> unit a"
@@ -1567,6 +1567,15 @@ qed
 
 end
 
+instantiation virtual_state :: (type) sep_algebra
+begin
+
+instance proof
+  show "\<And>a :: 'a virtual_state. unit a = stabilize |a|"
+    unfolding unit_virtual_state_def by simp
+qed
+
+end
 
 
 (*

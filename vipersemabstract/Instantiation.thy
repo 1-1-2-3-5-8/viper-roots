@@ -273,7 +273,7 @@ proof (rule full_state_ext)
         fix a :: "'a val"
         assume a1: "get_h (stabilize (remove_only \<omega> l)) x = Some a"
         assume a2: "x \<noteq> l"
-        have "\<forall>p. (p::(nat \<Rightarrow> 'a val option) agreement \<times> (char list \<Rightarrow> 'a virtual_state option) agreement \<times> 'a virtual_state) \<succeq> stabilize p \<and> sep_algebra_class.stable (stabilize p) \<and> (\<forall>pa. \<not> sep_algebra_class.stable pa \<or> \<not> p \<succeq> pa \<or> stabilize p \<succeq> pa)"
+        have "\<forall>p. (p::(nat \<Rightarrow> 'a val option) agreement \<times> (char list \<Rightarrow> 'a virtual_state option) agreement \<times> 'a virtual_state) \<succeq> stabilize p \<and> weak_sep_algebra_class.stable (stabilize p) \<and> (\<forall>pa. \<not> weak_sep_algebra_class.stable pa \<or> \<not> p \<succeq> pa \<or> stabilize p \<succeq> pa)"
           by (metis (no_types) max_projection_prop_def max_projection_prop_stable_stabilize)
         then show ?thesis
           using a2 a1 by (smt (z3) \<open>get_m (stabilize (remove_only \<omega> l)) = get_m (remove_only (stabilize \<omega>) l)\<close> fun_upd_other get_vh_Some_greater remove_only_charact(1) stable_get_state stable_virtual_state_def vstate_wf_Some)
@@ -508,7 +508,7 @@ qed
 
 
 fun wf_custom_stmt where
-  "wf_custom_stmt \<Delta> (FieldAssign r f e) \<longleftrightarrow> sep_algebra_class.wf_exp r \<and> sep_algebra_class.wf_exp e
+  "wf_custom_stmt \<Delta> (FieldAssign r f e) \<longleftrightarrow> weak_sep_algebra_class.wf_exp r \<and> weak_sep_algebra_class.wf_exp e
   \<and> (\<exists>ty. custom_context \<Delta> f = Some ty \<and> TypedEqui.typed_exp ty e)"
 
 
@@ -693,9 +693,9 @@ proof (rule self_framingI)
             by simp
           then show "get_m (stabilize (set_state \<omega>' (set_value (get_state \<omega>') (l, f) v0))) = get_m (stabilize \<omega>)"
             using r by auto
-          show "sep_algebra_class.stable (get_state (stabilize (set_state \<omega>' (set_value (get_state \<omega>') (l, f) v0))))"
+          show "weak_sep_algebra_class.stable (get_state (stabilize (set_state \<omega>' (set_value (get_state \<omega>') (l, f) v0))))"
             by (metis get_state_def stabilize_is_stable stable_prod_def)
-          show "sep_algebra_class.stable (get_state (stabilize \<omega>))"
+          show "weak_sep_algebra_class.stable (get_state (stabilize \<omega>))"
             by (metis get_state_def stabilize_is_stable stable_prod_def)
           
           fix l' va vb assume "get_h (stabilize (set_state \<omega>' (set_value (get_state \<omega>') (l, f) v0))) l' = Some va"
@@ -799,7 +799,7 @@ proof -
       by simp
 
     fix \<omega>' :: "((nat \<Rightarrow> 'b val option) agreement \<times> (char list \<Rightarrow> 'b virtual_state option) agreement \<times> 'b virtual_state)"
-    assume asm0: "sep_algebra_class.stable \<omega>'"
+    assume asm0: "weak_sep_algebra_class.stable \<omega>'"
     show "\<omega>' \<in> Stabilize (\<Union> (f ` SA)) \<Longrightarrow> \<omega>' \<in> update_value \<Delta> (Stabilize (snd ` SA)) r g e"
     proof -
       assume asm1: "\<omega>' \<in> Stabilize (\<Union> (f ` SA))"
@@ -821,7 +821,7 @@ proof -
             \<open>stabilize \<omega>' = set_state (snd \<alpha>) (set_value (get_state (snd \<alpha>)) (l, g) v)\<close>]
         by (smt (verit, ccfv_threshold) \<open>\<alpha> \<in> SA\<close> \<open>e (snd \<alpha>) = Some v\<close> calculation option.sel r typed_value_def)
       then show "\<omega>' \<in> ?B" unfolding update_value_def
-        by (simp add: \<open>sep_algebra_class.stable \<omega>'\<close> already_stable)
+        by (simp add: \<open>weak_sep_algebra_class.stable \<omega>'\<close> already_stable)
     qed
     
     show "\<omega>' \<in> update_value \<Delta> (Stabilize (snd ` SA)) r g e \<Longrightarrow> \<omega>' \<in> Stabilize (\<Union> (f ` SA))"
@@ -862,7 +862,7 @@ lemma custom_reciprocal:
   assumes "SL_Custom \<Delta> A C B"
       and "\<omega> \<in> A"
       and "wf_custom_stmt \<Delta> C"
-      and "sep_algebra_class.stable \<omega>"
+      and "weak_sep_algebra_class.stable \<omega>"
       and "TypedEqui.typed \<Delta> \<omega>"
     shows "\<exists>S. red_custom_stmt \<Delta> C \<omega> S \<and> S \<subseteq> B"
   using assms
@@ -881,9 +881,9 @@ qed
 
 lemma red_custom_stable:
   assumes "red_custom_stmt \<Delta> C \<omega> S"
-      and "sep_algebra_class.stable \<omega>"
+      and "weak_sep_algebra_class.stable \<omega>"
       and "\<omega>' \<in> S"
-    shows "sep_algebra_class.stable \<omega>'"
+    shows "weak_sep_algebra_class.stable \<omega>'"
   using assms
 proof (induct rule: red_custom_stmt.induct)
   case (RedFieldAssign r \<omega> hl e v f \<Delta> ty)
@@ -940,11 +940,11 @@ proof
        TypedEqui.wf_set \<Delta> (snd ` SA) \<Longrightarrow> SL_Custom \<Delta> (Stabilize (snd ` SA)) C (Stabilize (\<Union> (f ` SA)))"    
     by (simp add: SL_proof_aux_custom TypedEqui.wf_set_def TypedEqui.wf_state_def)
   fix A B \<omega>
-  show "SL_Custom \<Delta> A C B \<Longrightarrow> \<omega> \<in> A \<Longrightarrow> wf_custom_stmt \<Delta> C \<Longrightarrow> sep_algebra_class.stable \<omega> \<Longrightarrow> TypedEqui.typed \<Delta> \<omega> \<Longrightarrow> \<exists>S. red_custom_stmt \<Delta> C \<omega> S \<and> S \<subseteq> B"
+  show "SL_Custom \<Delta> A C B \<Longrightarrow> \<omega> \<in> A \<Longrightarrow> wf_custom_stmt \<Delta> C \<Longrightarrow> weak_sep_algebra_class.stable \<omega> \<Longrightarrow> TypedEqui.typed \<Delta> \<omega> \<Longrightarrow> \<exists>S. red_custom_stmt \<Delta> C \<omega> S \<and> S \<subseteq> B"
     using custom_reciprocal by blast
   fix S \<omega>'
   assume asm0: "red_custom_stmt \<Delta> C \<omega> S"
-  show "sep_algebra_class.stable \<omega> \<Longrightarrow> \<omega>' \<in> S \<Longrightarrow> sep_algebra_class.stable \<omega>'"
+  show "weak_sep_algebra_class.stable \<omega> \<Longrightarrow> \<omega>' \<in> S \<Longrightarrow> weak_sep_algebra_class.stable \<omega>'"
     using asm0 red_custom_stable by blast
   show "TypedEqui.typed_store \<Delta> (get_store \<omega>) \<Longrightarrow> \<omega>' \<in> S \<Longrightarrow> TypedEqui.typed_store \<Delta> (get_store \<omega>')"
     using asm0 by (induct rule: red_custom_stmt.induct) auto
@@ -1076,7 +1076,7 @@ lemma concrete_red_stmt_post_stable_wf :
 
 lemma concrete_post_Inhale :
   assumes "rel_stable_assertion \<omega> A"
-  assumes "(Set.filter sep_algebra_class.stable ({\<omega>} \<otimes> A)) \<subseteq> S"
+  assumes "(Set.filter weak_sep_algebra_class.stable ({\<omega>} \<otimes> A)) \<subseteq> S"
   shows "concrete_red_stmt_post \<Delta> (abs_stmt.Inhale A) \<omega> S"
   using assms unfolding concrete_red_stmt_post_def
   by (smt (verit, del_insts) ConcreteSemantics.RedInhale in_mono member_filter subsetI)
@@ -1084,7 +1084,7 @@ lemma concrete_post_Inhale :
 lemma concrete_post_Exhale_raw :
   assumes "a \<in> A"
   assumes "Some \<omega> = \<omega>' \<oplus> a"
-  assumes "sep_algebra_class.stable \<omega>'"
+  assumes "weak_sep_algebra_class.stable \<omega>'"
   assumes "\<omega>' \<in> S"
   shows "concrete_red_stmt_post \<Delta> (abs_stmt.Exhale A) \<omega> S"
   using assms unfolding concrete_red_stmt_post_def by (blast intro: ConcreteSemantics.RedExhale)

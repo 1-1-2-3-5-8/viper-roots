@@ -2815,7 +2815,7 @@ next
       using calc by simp
   next
     show "a2t_states ctxt -`\<^sub>s red_stmt_total_set ctxt R \<Lambda> C1 (a2t_states ctxt \<omega>) \<subseteq> {\<omega>''.
-        sep_algebra_class.stable \<omega>'' \<longrightarrow> a2t_state_wf ctxt (get_trace \<omega>'') \<longrightarrow> \<omega>'' \<in> {\<omega>''.
+        weak_sep_algebra_class.stable \<omega>'' \<longrightarrow> a2t_state_wf ctxt (get_trace \<omega>'') \<longrightarrow> \<omega>'' \<in> {\<omega>''.
         concrete_red_stmt_post (t2a_ctxt ctxt \<Lambda>) (compile \<Delta> (\<Lambda>, declared_fields (program_total ctxt)) C2) \<omega>''
          (a2t_states ctxt -`\<^sub>s red_stmt_total_set ctxt R \<Lambda> (stmt.Seq C1 C2) (a2t_states ctxt \<omega>))}}"
       apply (rule subsetI)

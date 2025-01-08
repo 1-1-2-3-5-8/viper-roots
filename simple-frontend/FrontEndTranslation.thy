@@ -783,7 +783,7 @@ qed
 
 
 lemma typed_self_framing_star:
-  assumes "self_framing A"
+  assumes "self_framing (A :: ('a :: sep_algebra) assertion)"
       and "self_framing B"
     shows "self_framing (A \<otimes> B)"
 proof (rule self_framingI)
@@ -813,7 +813,7 @@ qed
 
 
 lemma self_framing_typed_star_atrue:
-  assumes "self_framing P"
+  assumes "self_framing (P :: ('a :: sep_algebra) assertion)"
   shows "self_framing (P \<otimes> UNIV)"
   by (simp add: assms typed_self_framing_star)
 
@@ -1473,7 +1473,7 @@ lemma no_label_same_verifies:
   shows "ConcreteSemantics.verifies_set \<Gamma> (atrue \<Delta> tys) C"
 proof (rule ConcreteSemantics.verifies_setI)
   fix \<omega>
-  assume asm0: "\<omega> \<in> atrue \<Delta> tys" "sep_algebra_class.stable \<omega>" "typed \<Gamma> \<omega>"
+  assume asm0: "\<omega> \<in> atrue \<Delta> tys" "weak_sep_algebra_class.stable \<omega>" "typed \<Gamma> \<omega>"
   then have "remove_trace \<omega> \<in> atrue \<Delta> tys"
     by (metis ConcreteSemantics.entails_typed_def ConcreteSemantics.semi_typedE UNIV_I already_stable atrue_semi_typed typed_remove_trace univ_t_entails_atrue)
   then show "ConcreteSemantics.verifies \<Gamma> C \<omega>"

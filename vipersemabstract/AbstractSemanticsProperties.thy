@@ -5,6 +5,35 @@ begin
 context typed_state
 begin
 
+lemma self_framing_star_wf:
+  assumes "self_framing A"
+      and "self_framing B"
+      and "wf_assertion B"
+    shows "self_framing (A \<otimes> B)"
+proof (rule self_framingI, rule)
+  fix \<omega>
+  assume "\<omega> \<in> A \<otimes> B"
+  then obtain a b where "Some \<omega> = a \<oplus> b" "a \<in> A" "b \<in> B"
+    unfolding in_add_set by auto
+  then have "stabilize a \<in> A" "stabilize b \<in> B"
+    using assms self_framingE by auto
+  then show "stabilize \<omega> \<in> A \<otimes> B"
+    unfolding in_add_set using stabilize_sum \<open>Some \<omega> = a \<oplus> b\<close> by blast
+next
+  fix \<omega>
+  assume "stabilize \<omega> \<in> A \<otimes> B"
+  then obtain a b where "Some (stabilize \<omega>) = a \<oplus> b" "a \<in> A" "b \<in> B"
+    unfolding in_add_set by auto
+  then obtain b' where "Some b' = b \<oplus> |\<omega>|"
+    by (meson decompose_stabilize_pure defined_def greater_def greater_equiv option.collapse smaller_compatible_core succ_trans)
+  then have "Some \<omega> = a \<oplus> b'"
+    using \<open>Some (stabilize \<omega>) = a \<oplus> b\<close> asso1 decompose_stabilize_pure by (metis (no_types, lifting))
+  moreover have "b' \<in> B"
+    using assms(3) \<open>b \<in> B\<close> \<open>Some b' = b \<oplus> |\<omega>|\<close> core_is_pure pure_def pure_larger_def wf_assertionE by blast
+  ultimately show "\<omega> \<in> A \<otimes> B"
+    unfolding in_add_set using \<open>a \<in> A\<close> by blast
+qed
+
 
 lemma semi_typedE:
   assumes "semi_typed \<Delta> A"
@@ -390,7 +419,7 @@ proof (induct rule: red_stmt_induct_simple)
   then show ?case using red_custom_stable[of \<Delta> C \<omega> S \<omega>'] by simp
 next
   case (Havoc \<Delta> x ty \<omega> v)
-  then show "sep_algebra_class.stable (assign_var_state x (Some v) \<omega>)"
+  then show "weak_sep_algebra_class.stable (assign_var_state x (Some v) \<omega>)"
     by (metis (no_types, lifting) assign_var_state_def max_projection_prop_stable_stabilize mppI mpp_smaller set_store_stabilize stabilize_is_stable succ_refl)
 next
   case (LocalAssign \<Delta> e \<omega> v x)
@@ -929,7 +958,7 @@ next
     show "self_framing (Stabilize (snd ` SA) \<otimes> purify b)"
       using If(4) Stabilize_self_framing \<open>framed_by_exp (Stabilize (snd ` SA)) b\<close> semantics.wf_exp_framed_by_typed semantics_axioms wf_abs_stmt.simps(6) by blast
 
-    fix \<omega> assume asm0: "sep_algebra_class.stable \<omega>" "\<omega> \<in> ?A1"
+    fix \<omega> assume asm0: "weak_sep_algebra_class.stable \<omega>" "\<omega> \<in> ?A1"
     then have "b (stabilize \<omega>) = Some True"
       by fastforce
     show "\<omega> \<in> Stabilize (snd ` SA) \<otimes> purify b"
@@ -945,12 +974,9 @@ next
         by (smt (verit) CollectI max_projection_prop_def max_projection_prop_pure_core purify_def typed_smaller x_elem_set_product)
     qed
   next
-    fix \<omega> assume asm0: "sep_algebra_class.stable \<omega>" "\<omega> \<in> Stabilize (snd ` SA) \<otimes> purify b"
+    fix \<omega> assume asm0: "weak_sep_algebra_class.stable \<omega>" "\<omega> \<in> Stabilize (snd ` SA) \<otimes> purify b"
     then have "\<omega> \<in> Stabilize (snd ` SA) \<and> b \<omega> = Some True"
-      sorry
-(*
       by (smt (verit, best) CollectD If.prems(2) add_set_commm in_set_sum purify_def wf_abs_stmt.simps(6)  stable_and_sum_pure_same wf_exp_def x_elem_set_product)
-*)
     then show "\<omega> \<in> ?A1"
       using already_stable asm0(1) by force
   qed (simp_all)
@@ -964,7 +990,7 @@ next
     show "self_framing (Stabilize (snd ` SA) \<otimes> purify (negate b))"
       using If.prems(2) Stabilize_self_framing \<open>framed_by_exp (Stabilize (snd ` SA)) b\<close> framed_by_negate semantics.wf_abs_stmt.simps(6) semantics_axioms wf_exp_framed_by_typed wf_exp_negate by blast
 
-    fix \<omega> assume asm0: "sep_algebra_class.stable \<omega>" "\<omega> \<in> ?A2"
+    fix \<omega> assume asm0: "weak_sep_algebra_class.stable \<omega>" "\<omega> \<in> ?A2"
     then have "b (stabilize \<omega>) = Some False" by fastforce
     show "\<omega> \<in> Stabilize (snd ` SA) \<otimes> purify (negate b)"
     proof -
@@ -982,15 +1008,12 @@ next
         using \<open>\<omega> \<in> Stabilize (snd ` SA)\<close> x_elem_set_product by blast
     qed
   next
-    fix \<omega> assume asm0: "sep_algebra_class.stable \<omega>" "\<omega> \<in> Stabilize (snd ` SA) \<otimes> purify (negate b)"
+    fix \<omega> assume asm0: "weak_sep_algebra_class.stable \<omega>" "\<omega> \<in> Stabilize (snd ` SA) \<otimes> purify (negate b)"
     then obtain a p where "pure p" "b p = Some False" "Some \<omega> = a \<oplus> p" "a \<in> Stabilize (snd ` SA)"
       by (smt (verit, best) CollectD negate_def option.discI option.exhaust_sel purify_def x_elem_set_product)
 
     then have "\<omega> \<in> Stabilize (snd ` SA) \<and> b \<omega> = Some False"
-      sorry
-(*
       by (metis If.prems(2) asm0(1) greater_equiv stable_and_sum_pure_same wf_abs_stmt.simps(6) wf_expE)
-*)
     then show "\<omega> \<in> ?A2"
       using already_stable asm0(1) by force
   qed (simp_all)
@@ -1029,7 +1052,7 @@ next
 
   let ?A = "Stabilize (snd ` SA)"
 
-  have "\<And>\<omega>. \<omega> \<in> ?A \<Longrightarrow> sep_algebra_class.stable \<omega> \<Longrightarrow> rel_stable_assertion \<omega> P"
+  have "\<And>\<omega>. \<omega> \<in> ?A \<Longrightarrow> weak_sep_algebra_class.stable \<omega> \<Longrightarrow> rel_stable_assertion \<omega> P"
   proof -
     fix \<omega> assume asm0: "\<omega> \<in> ?A" "stable \<omega>"
     then obtain x where "x \<in> SA" "snd x = \<omega>"
@@ -1041,16 +1064,13 @@ next
       by force
   qed
   then have "self_framing (?A \<otimes> P)"
-    sorry
-(*
     using Stabilize_self_framing framed_byI self_framing_star by blast
-*)
 
   moreover have r: "framed_by ?A (Set.filter (typed \<Delta> \<circ> stabilize) P)"
   proof (rule framed_byI)
-    fix \<omega> assume asm0: "\<omega> \<in> ?A" "sep_algebra_class.stable \<omega>"
+    fix \<omega> assume asm0: "\<omega> \<in> ?A" "weak_sep_algebra_class.stable \<omega>"
     then have r: "rel_stable_assertion \<omega> P"
-      using \<open>\<And>\<omega>. \<lbrakk>\<omega> \<in> Stabilize (snd ` SA); sep_algebra_class.stable \<omega>\<rbrakk> \<Longrightarrow> rel_stable_assertion \<omega> P\<close> by blast
+      using \<open>\<And>\<omega>. \<lbrakk>\<omega> \<in> Stabilize (snd ` SA); weak_sep_algebra_class.stable \<omega>\<rbrakk> \<Longrightarrow> rel_stable_assertion \<omega> P\<close> by blast
     show "rel_stable_assertion \<omega> (Set.filter (typed \<Delta> \<circ> stabilize) P)"
       unfolding rel_stable_assertion_def
     proof (rule stable_set_filter_stabilize)
@@ -1099,18 +1119,15 @@ next
   have "\<Delta> \<turnstile> [?A] Inhale P [?A \<otimes> Set.filter (typed \<Delta> \<circ> stabilize) P]"
     apply (rule RuleInhale)
     apply auto[1]
-    using \<open>\<And>\<omega>. \<lbrakk>\<omega> \<in> Stabilize (snd ` SA); sep_algebra_class.stable \<omega>\<rbrakk> \<Longrightarrow> rel_stable_assertion \<omega> P\<close> framed_byI by blast
+    using \<open>\<And>\<omega>. \<lbrakk>\<omega> \<in> Stabilize (snd ` SA); weak_sep_algebra_class.stable \<omega>\<rbrakk> \<Longrightarrow> rel_stable_assertion \<omega> P\<close> framed_byI by blast
   moreover have "self_framing (?A \<otimes> Set.filter (typed \<Delta> \<circ> stabilize) P)"
-    sorry
-(*
     using Stabilize_self_framing r self_framing_star by blast
-*)
-  moreover have "Set.filter sep_algebra_class.stable (snd ` SA) \<subseteq> ?A"
+  moreover have "Set.filter weak_sep_algebra_class.stable (snd ` SA) \<subseteq> ?A"
     using Stabilize_filter_stable by blast
 
-  moreover have "Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega>) (?A \<otimes> Set.filter (typed \<Delta> \<circ> stabilize) P) = \<Union> (f ` SA)"
+  moreover have "Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega>) (?A \<otimes> Set.filter (typed \<Delta> \<circ> stabilize) P) = \<Union> (f ` SA)"
   proof
-    show "Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega>) (?A \<otimes> Set.filter (typed \<Delta> \<circ> stabilize) P) \<subseteq> \<Union> (f ` SA)"
+    show "Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega>) (?A \<otimes> Set.filter (typed \<Delta> \<circ> stabilize) P) \<subseteq> \<Union> (f ` SA)"
     proof
       fix \<omega> assume "\<omega> \<in> Set.filter stable (?A \<otimes> Set.filter (typed \<Delta> \<circ> stabilize) P)"
       then obtain a p where asm0: "stable \<omega>" "Some \<omega> = a \<oplus> p" "a \<in> ?A" "p \<in> Set.filter (typed \<Delta> \<circ> stabilize) P" "a \<in> Stabilize (snd ` SA)"
@@ -1121,7 +1138,7 @@ next
         using asm0(3) by auto
       then have "red_stmt \<Delta> (Inhale P) (stabilize a) (f l)"
         by (metis Inhale.prems(1))
-      then have "f l = Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>)  ({stabilize a} \<otimes> P) \<and> rel_stable_assertion (stabilize a) P"
+      then have "f l = Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>)  ({stabilize a} \<otimes> P) \<and> rel_stable_assertion (stabilize a) P"
         using red_stmt_Inhale_elim by blast
       then have "\<omega> \<in> f l"
         by (smt (verit, best) Inhale.prems(4) \<open>l \<in> SA\<close> \<open>snd l = stabilize a\<close> already_stable asm0(1) asm0(2) asm0(4) calculation comp_apply is_in_set_sum member_filter stabilize_sum typed_sum)
@@ -1137,15 +1154,15 @@ next
         using Inhale.prems(1) by blast
       then show "\<omega> \<in> Set.filter stable (Stabilize (snd ` SA) \<otimes> Set.filter (typed \<Delta> \<circ> stabilize) P)"
       proof (rule red_stmt_Inhale_elim)
-        assume "f x = Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({snd x} \<otimes> P)"
-        then obtain p where "p \<in> P" "Some \<omega> = snd x \<oplus> p" "(\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) \<omega>"
+        assume "f x = Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({snd x} \<otimes> P)"
+        then obtain p where "p \<in> P" "Some \<omega> = snd x \<oplus> p" "(\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) \<omega>"
           by (smt (verit, ccfv_SIG) \<open>\<omega> \<in> f x\<close> member_filter singletonD x_elem_set_product)
         then have "typed \<Delta> p"
           using greater_equiv typed_smaller by blast
         then have "\<omega> \<in> Stabilize (snd ` SA) \<otimes> Set.filter (typed \<Delta> \<circ> stabilize) P"
           by (smt (verit, ccfv_threshold) Inhale.prems(3) \<open>Some \<omega> = snd x \<oplus> p\<close> \<open>p \<in> P\<close> \<open>x \<in> SA\<close> already_stable comp_apply image_iff in_Stabilize member_filter typed_then_stabilize_typed wf_set_def wf_state_def x_elem_set_product)
         then show "\<omega> \<in> Set.filter stable (Stabilize (snd ` SA) \<otimes> Set.filter (typed \<Delta> \<circ> stabilize) P)"
-          by (simp add: \<open>sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>\<close>)
+          by (simp add: \<open>weak_sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>\<close>)
       qed
     qed
   qed
@@ -1157,12 +1174,12 @@ next
   let ?A = "Stabilize (\<Union> (f ` SA))"
   let ?B = "Stabilize (snd ` SA)"
 
-  have r: "\<And>\<omega>. \<omega> \<in> SA \<Longrightarrow> (\<exists>a \<omega>'. f \<omega> = {\<omega>'} \<and> a \<in> P \<and> Some (snd \<omega>) = \<omega>' \<oplus> a \<and> sep_algebra_class.stable \<omega>')"
+  have r: "\<And>\<omega>. \<omega> \<in> SA \<Longrightarrow> (\<exists>a \<omega>'. f \<omega> = {\<omega>'} \<and> a \<in> P \<and> Some (snd \<omega>) = \<omega>' \<oplus> a \<and> weak_sep_algebra_class.stable \<omega>')"
   proof -
     fix \<omega> assume "\<omega> \<in> SA"
     then have "red_stmt \<Delta> (Exhale P) (snd \<omega>) (f \<omega>)"
       using Exhale.prems(1) by blast
-    then show "\<exists>a \<omega>'. f \<omega> = {\<omega>'} \<and> a \<in> P \<and> Some (snd \<omega>) = \<omega>' \<oplus> a \<and> sep_algebra_class.stable \<omega>'"
+    then show "\<exists>a \<omega>'. f \<omega> = {\<omega>'} \<and> a \<in> P \<and> Some (snd \<omega>) = \<omega>' \<oplus> a \<and> weak_sep_algebra_class.stable \<omega>'"
       using red_stmt_Exhale_elim
       by blast
   qed
@@ -1177,12 +1194,12 @@ next
       using in_Stabilize by blast
     then obtain x where asm0: "x \<in> SA" "stabilize \<omega> = snd x"
       by blast
-    then obtain a \<omega>' where "f x = {\<omega>'} \<and> a \<in> P \<and> Some (stabilize \<omega>) = \<omega>' \<oplus> a \<and> sep_algebra_class.stable \<omega>'"
+    then obtain a \<omega>' where "f x = {\<omega>'} \<and> a \<in> P \<and> Some (stabilize \<omega>) = \<omega>' \<oplus> a \<and> weak_sep_algebra_class.stable \<omega>'"
       using r by metis
     moreover obtain \<omega>'' where "Some \<omega>'' = \<omega>' \<oplus> |\<omega>|"
       by (metis asso3 calculation commutative decompose_stabilize_pure not_Some_eq) (* long *)
-    then have "stabilize \<omega>'' = stabilize \<omega>'" sorry(*using pure_larger_stabilize_same[of \<omega>'' \<omega>']
-      using core_is_pure pure_def pure_larger_def by blast*)
+    then have "stabilize \<omega>'' = stabilize \<omega>'" using pure_larger_stabilize_same[of \<omega>'' \<omega>']
+      using core_is_pure pure_def pure_larger_def by blast
     then have "\<omega>'' \<in> Stabilize (\<Union> (f ` SA))"
       using already_stable asm0(1) calculation by fastforce
     moreover have "Some \<omega> = \<omega>'' \<oplus> a"
@@ -1264,7 +1281,7 @@ next
     then show "\<omega> \<in> Stabilize (\<Union> (f ` SA))"
       by (metis (no_types, lifting) UnI1 Union_image_insert \<open>\<alpha> \<in> SA\<close> \<open>\<omega> = assign_var_state x (e \<omega>') \<omega>'\<close> already_stable calculation image_insert insert_image stabilize_assign_var in_Stabilize  singletonI)
   next
-    fix \<omega> assume "sep_algebra_class.stable \<omega>" "\<omega> \<in> Stabilize (\<Union> (f ` SA))"
+    fix \<omega> assume "weak_sep_algebra_class.stable \<omega>" "\<omega> \<in> Stabilize (\<Union> (f ` SA))"
     then obtain \<alpha> where "\<alpha> \<in> SA" "\<omega> \<in> f \<alpha>"
       by (metis UN_E already_stable in_Stabilize)
     then obtain v where "variables \<Delta> x = Some ?ty \<and> e (snd \<alpha>) = Some v \<and> v \<in> ?ty
@@ -1306,7 +1323,7 @@ next
   proof (rule self_framing_ext)
     show "self_framing (exists_assert \<Delta> x (Stabilize (snd ` SA)))"
       using Stabilize_self_framing self_framing_exists_assert by blast
-    fix \<omega> assume asm0: "sep_algebra_class.stable \<omega>" "\<omega> \<in> exists_assert \<Delta> x (Stabilize (snd ` SA))"
+    fix \<omega> assume asm0: "weak_sep_algebra_class.stable \<omega>" "\<omega> \<in> exists_assert \<Delta> x (Stabilize (snd ` SA))"
     then obtain v0 v ty where asm1: "v0 \<in> ty" "get_store \<omega> x = Some v0" "variables \<Delta> x = Some ty"
       "v \<in> ty" "assign_var_state x (Some v) \<omega> \<in> ?A" using exists_assertE[of \<omega> \<Delta> x] by meson
     then obtain \<alpha> where "\<alpha> \<in> SA" "stabilize (assign_var_state x (Some v) \<omega>) = snd \<alpha>"
@@ -1320,7 +1337,7 @@ next
     then show "\<omega> \<in> Stabilize (\<Union> (f ` SA))"
       using \<open>\<alpha> \<in> SA\<close> asm0(2) in_Stabilize[of _] by blast
   next
-    fix \<omega> assume asm0: "sep_algebra_class.stable \<omega>" "\<omega> \<in> Stabilize (\<Union> (f ` SA))"
+    fix \<omega> assume asm0: "weak_sep_algebra_class.stable \<omega>" "\<omega> \<in> Stabilize (\<Union> (f ` SA))"
     then obtain \<alpha> where "\<alpha> \<in> SA" "\<omega> \<in> f \<alpha>"
       by (metis UN_E already_stable in_Stabilize)
     then obtain v where "variables \<Delta> x = Some ?ty \<and> \<omega> = assign_var_state x (Some v) (snd \<alpha>)" "v \<in> ?ty"
@@ -1448,7 +1465,7 @@ proof -
     show "self_framing A"
       by (simp add: assms(3))
 
-    fix \<omega> :: "('v, 'a) abs_state" assume asm0: "sep_algebra_class.stable \<omega>"
+    fix \<omega> :: "('v, 'a) abs_state" assume asm0: "weak_sep_algebra_class.stable \<omega>"
     show "\<omega> \<in> A \<Longrightarrow> \<omega> \<in> ?A"
     proof -
       assume asm1: "\<omega> \<in> A"
@@ -1732,15 +1749,15 @@ next
   ultimately show ?case by meson
 next
   case (RuleInhale A P \<Delta>)
-  moreover have "red_stmt \<Delta> (abs_stmt.Inhale P) \<omega> (Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> P))"
+  moreover have "red_stmt \<Delta> (abs_stmt.Inhale P) \<omega> (Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> P))"
   proof (rule RedInhale[of \<omega> P \<Delta>])
     show "rel_stable_assertion \<omega> P"
       using calculation(2) calculation(3) calculation(5) framed_by_def by blast
   qed
-  moreover have "Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> P) \<subseteq> A \<otimes> Set.filter (typed \<Delta> \<circ> stabilize) P"
+  moreover have "Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> P) \<subseteq> A \<otimes> Set.filter (typed \<Delta> \<circ> stabilize) P"
   proof
-    fix x assume asm0: "x \<in> Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> P)"
-    then obtain p where "sep_algebra_class.stable x \<and> typed \<Delta> x" "p \<in> P" "Some x = \<omega> \<oplus> p"
+    fix x assume asm0: "x \<in> Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> P)"
+    then obtain p where "weak_sep_algebra_class.stable x \<and> typed \<Delta> x" "p \<in> P" "Some x = \<omega> \<oplus> p"
       using in_singleton_star by force
     then have "typed \<Delta> (stabilize p)"
       using greater_equiv stabilize_sum_of_stable typed_state.typed_smaller typed_state_axioms by blast
@@ -1936,9 +1953,9 @@ next
     using greater_singletonI red_stmt_sequential_composition.RedSkip by blast
 next
   case (RedInhale \<omega> A \<Delta>)
-  have "\<And>\<omega>''. sep_algebra_class.stable \<omega>'' \<Longrightarrow> \<omega>'' \<succeq> \<omega> \<Longrightarrow> (\<exists>S'. red_stmt \<Delta> (abs_stmt.Inhale A) \<omega>'' S' \<and> S' \<ggreater> Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> A))"
+  have "\<And>\<omega>''. weak_sep_algebra_class.stable \<omega>'' \<Longrightarrow> \<omega>'' \<succeq> \<omega> \<Longrightarrow> (\<exists>S'. red_stmt \<Delta> (abs_stmt.Inhale A) \<omega>'' S' \<and> S' \<ggreater> Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> A))"
   proof -
-    fix \<omega>'' assume asm0: "sep_algebra_class.stable \<omega>''" "\<omega>'' \<succeq> \<omega>"
+    fix \<omega>'' assume asm0: "weak_sep_algebra_class.stable \<omega>''" "\<omega>'' \<succeq> \<omega>"
     then obtain r where "Some \<omega>'' = \<omega> \<oplus> r"
       using greater_def by blast
     then have "Some \<omega>'' = \<omega> \<oplus> stabilize r"
@@ -1959,41 +1976,41 @@ next
       then show "\<exists>a'\<in>A. Some (stabilize \<omega>') = \<omega>'' \<oplus> a'"
         using \<open>Some (stabilize x) = \<omega> \<oplus> a' \<and> a' \<in> A\<close> by blast
     qed
-    then have "red_stmt \<Delta> (abs_stmt.Inhale A) \<omega>'' (Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>''} \<otimes> A))"
+    then have "red_stmt \<Delta> (abs_stmt.Inhale A) \<omega>'' (Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>''} \<otimes> A))"
       using red_stmt_sequential_composition.RedInhale[of \<omega>'' A \<Delta>] by blast
-    moreover have "Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>''} \<otimes> A) \<ggreater> Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> A)"
+    moreover have "Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>''} \<otimes> A) \<ggreater> Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> A)"
     proof (rule greater_setI)
-      fix x assume "x \<in> Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>''} \<otimes> A)"
-      then obtain a where "sep_algebra_class.stable x \<and> typed \<Delta> x" "Some x = \<omega>'' \<oplus> a" "a \<in> A"
+      fix x assume "x \<in> Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>''} \<otimes> A)"
+      then obtain a where "weak_sep_algebra_class.stable x \<and> typed \<Delta> x" "Some x = \<omega>'' \<oplus> a" "a \<in> A"
         using in_singleton_star by force      
       then obtain y where "Some y = \<omega> \<oplus> a"
         using asm0(2) compatible_smaller by blast
       then obtain a' where "Some (stabilize y) = \<omega> \<oplus> a' \<and> a' \<in> A"        
         using RedInhale.hyps \<open>a \<in> A\<close> rel_stable_assertionE by blast
       then have "typed \<Delta> (stabilize y)"
-        using \<open>Some x = \<omega>'' \<oplus> a\<close> \<open>Some y = \<omega> \<oplus> a\<close> \<open>sep_algebra_class.stable x \<and> typed \<Delta> x\<close> addition_bigger asm0(2) typed_smaller typed_then_stabilize_typed by blast
-      then have "stabilize y \<in> Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> A)"
+        using \<open>Some x = \<omega>'' \<oplus> a\<close> \<open>Some y = \<omega> \<oplus> a\<close> \<open>weak_sep_algebra_class.stable x \<and> typed \<Delta> x\<close> addition_bigger asm0(2) typed_smaller typed_then_stabilize_typed by blast
+      then have "stabilize y \<in> Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> A)"
         by (simp add: \<open>Some (stabilize y) = \<omega> \<oplus> a' \<and> a' \<in> A\<close> is_in_set_sum)
-      then show "\<exists>b\<in>Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> A). x \<succeq> b"
-        by (meson \<open>Some x = \<omega>'' \<oplus> a\<close> \<open>Some y = \<omega> \<oplus> a\<close> \<open>sep_algebra_class.stable x \<and> typed \<Delta> x\<close> addition_bigger asm0(2) core_stabilize_mono(2) stabilize_sum stabilize_sum_of_stable)
+      then show "\<exists>b\<in>Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> A). x \<succeq> b"
+        by (meson \<open>Some x = \<omega>'' \<oplus> a\<close> \<open>Some y = \<omega> \<oplus> a\<close> \<open>weak_sep_algebra_class.stable x \<and> typed \<Delta> x\<close> addition_bigger asm0(2) core_stabilize_mono(2) stabilize_sum stabilize_sum_of_stable)
     qed
-    ultimately show "\<exists>S'. red_stmt \<Delta> (abs_stmt.Inhale A) \<omega>'' S' \<and> S' \<ggreater> Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> A)"
+    ultimately show "\<exists>S'. red_stmt \<Delta> (abs_stmt.Inhale A) \<omega>'' S' \<and> S' \<ggreater> Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> A)"
       by meson
   qed
-  then show "\<forall>\<omega>'. sep_algebra_class.stable \<omega>' \<and> \<omega>' \<succeq> \<omega> \<longrightarrow>
-             (\<exists>S'. red_stmt \<Delta> (abs_stmt.Inhale A) \<omega>' S' \<and> S' \<ggreater> Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> A))"
+  then show "\<forall>\<omega>'. weak_sep_algebra_class.stable \<omega>' \<and> \<omega>' \<succeq> \<omega> \<longrightarrow>
+             (\<exists>S'. red_stmt \<Delta> (abs_stmt.Inhale A) \<omega>' S' \<and> S' \<ggreater> Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> A))"
     by blast
 next
   case (RedExhale a A \<omega> \<omega>' \<Delta>)
-  have "\<And>\<omega>''. sep_algebra_class.stable \<omega>'' \<Longrightarrow> \<omega>'' \<succeq> \<omega> \<Longrightarrow> (\<exists>S'. red_stmt \<Delta> (abs_stmt.Exhale A) \<omega>'' S' \<and> S' \<ggreater> {\<omega>'})"
+  have "\<And>\<omega>''. weak_sep_algebra_class.stable \<omega>'' \<Longrightarrow> \<omega>'' \<succeq> \<omega> \<Longrightarrow> (\<exists>S'. red_stmt \<Delta> (abs_stmt.Exhale A) \<omega>'' S' \<and> S' \<ggreater> {\<omega>'})"
   proof -
-    fix \<omega>'' assume "sep_algebra_class.stable \<omega>''" "\<omega>'' \<succeq> \<omega>"
+    fix \<omega>'' assume "weak_sep_algebra_class.stable \<omega>''" "\<omega>'' \<succeq> \<omega>"
     then obtain r where "Some \<omega>'' = \<omega> \<oplus> r" unfolding greater_def by blast
     then obtain y where "Some y = \<omega>' \<oplus> stabilize r"
       by (metis (no_types, opaque_lifting) RedExhale.hyps(2) RedExhale.hyps(3) already_stable compatible_smaller greater_def stabilize_sum)
     then have "Some \<omega>'' = y \<oplus> a"
       using RedExhale.hyps(2)
-        stabilize_sum_result_stable[OF _ \<open>sep_algebra_class.stable \<omega>''\<close>, of r \<omega>] commutative[of r \<omega>]
+        stabilize_sum_result_stable[OF _ \<open>weak_sep_algebra_class.stable \<omega>''\<close>, of r \<omega>] commutative[of r \<omega>]
       by (metis (no_types, lifting) \<open>Some \<omega>'' = \<omega> \<oplus> r\<close> asso1 commutative)
     then have "red_stmt \<Delta> (abs_stmt.Exhale A) \<omega>'' {y}"
       using red_stmt_sequential_composition.RedExhale[of a A \<omega>'' y]
@@ -2001,7 +2018,7 @@ next
     then show "\<exists>S'. red_stmt \<Delta> (abs_stmt.Exhale A) \<omega>'' S' \<and> S' \<ggreater> {\<omega>'}"
       by (metis \<open>Some y = \<omega>' \<oplus> stabilize r\<close> commutative greater_equiv greater_singletonI)
   qed
-  then show "\<forall>\<omega>''. sep_algebra_class.stable \<omega>'' \<and> \<omega>'' \<succeq> \<omega> \<longrightarrow> (\<exists>S'. red_stmt \<Delta> (abs_stmt.Exhale A) \<omega>'' S' \<and> S' \<ggreater> {\<omega>'})" by simp
+  then show "\<forall>\<omega>''. weak_sep_algebra_class.stable \<omega>'' \<and> \<omega>'' \<succeq> \<omega> \<longrightarrow> (\<exists>S'. red_stmt \<Delta> (abs_stmt.Exhale A) \<omega>'' S' \<and> S' \<ggreater> {\<omega>'})" by simp
 next
   case (RedIfTrue b \<omega> \<Delta> C1 S C2)
   then show ?case
@@ -2040,7 +2057,7 @@ next
         using \<open>v \<in> ty\<close> by blast
     qed
   qed
-  then show "\<forall>\<omega>'. sep_algebra_class.stable \<omega>' \<and> \<omega>' \<succeq> \<omega> \<longrightarrow> (\<exists>S'. red_stmt \<Delta> (abs_stmt.Havoc x) \<omega>' S' \<and> S' \<ggreater> {assign_var_state x (Some v) \<omega> |v. v \<in> ty})"
+  then show "\<forall>\<omega>'. weak_sep_algebra_class.stable \<omega>' \<and> \<omega>' \<succeq> \<omega> \<longrightarrow> (\<exists>S'. red_stmt \<Delta> (abs_stmt.Havoc x) \<omega>' S' \<and> S' \<ggreater> {assign_var_state x (Some v) \<omega> |v. v \<in> ty})"
     using RedHavoc.hyps red_stmt_sequential_composition.RedHavoc by blast
 next
   case (RedCustom \<Delta> C \<omega> S)
@@ -2081,7 +2098,6 @@ lemma good_atrue_typed[simp]:
   by (simp add: already_stable)
 
 
-(* not used
 lemma Viper_implies_SL_proof_atrue:
   assumes "verifies_set \<Delta> A C"
       and "wf_abs_stmt \<Delta> C"
@@ -2099,15 +2115,14 @@ lemma Viper_implies_SL_proof_atrue:
   apply (rule verifies_setI)
   using monotonicity_verifiesE[OF assms(2) assms(5-6)]
   by (metis (no_types, opaque_lifting) already_stable assms(1) assms(3) assms(4) core_stabilize_mono(2) in_set_sum self_framingE semi_typed_def stabilize_is_stable verifies_set_def)
-*)
 
 
 lemma inhale_c_exhale_verifies_simplifies:
-  assumes "\<And>\<omega>. sep_algebra_class.stable \<omega> \<Longrightarrow> typed \<Delta> \<omega> \<Longrightarrow> |\<omega>| \<in> A"
+  assumes "\<And>\<omega>. weak_sep_algebra_class.stable \<omega> \<Longrightarrow> typed \<Delta> \<omega> \<Longrightarrow> |\<omega>| \<in> A"
       and "verifies_set \<Delta> P (Inhale A;; C;; Exhale B)"
     shows "verifies_set \<Delta> P C"
 proof (rule verifies_setI)
-  fix \<omega> assume "\<omega> \<in> P" "sep_algebra_class.stable \<omega>" "typed \<Delta> \<omega>"
+  fix \<omega> assume "\<omega> \<in> P" "weak_sep_algebra_class.stable \<omega>" "typed \<Delta> \<omega>"
   then obtain S where "red_stmt \<Delta> ((Inhale A;; C);; Exhale B) \<omega> S"
     using assms(2) verifies_def verifies_set_def by fastforce
   then show "verifies \<Delta> C \<omega>"
@@ -2116,13 +2131,13 @@ proof (rule verifies_setI)
     apply (erule red_stmt_Inhale_elim)
   proof -
     fix S0 S1 assume "sequential_composition \<Delta> S0 C S1"
-      "S0 = Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> A)"
+      "S0 = Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> A)"
     then have "|\<omega>| \<in> A"
-      by (simp add: \<open>sep_algebra_class.stable \<omega>\<close> \<open>typed \<Delta> \<omega>\<close> assms(1))
-    then have "\<omega> \<in> Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> A)"
-      by (simp add: \<open>sep_algebra_class.stable \<omega>\<close> \<open>typed \<Delta> \<omega>\<close> core_is_smaller is_in_set_sum)
+      by (simp add: \<open>weak_sep_algebra_class.stable \<omega>\<close> \<open>typed \<Delta> \<omega>\<close> assms(1))
+    then have "\<omega> \<in> Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> A)"
+      by (simp add: \<open>weak_sep_algebra_class.stable \<omega>\<close> \<open>typed \<Delta> \<omega>\<close> core_is_smaller is_in_set_sum)
     then show "verifies \<Delta> C \<omega>"
-      using \<open>S0 = Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> A)\<close> \<open>sequential_composition \<Delta> S0 C S1\<close> verifies_def by blast
+      using \<open>S0 = Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Delta> \<omega>) ({\<omega>} \<otimes> A)\<close> \<open>sequential_composition \<Delta> S0 C S1\<close> verifies_def by blast
   qed
 qed
 

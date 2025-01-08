@@ -265,7 +265,7 @@ proof (rule sound_translation[OF assms(1-3)])
         apply (rule verifies_more_refl)
       using wf_fst assms(12) assms(3) apply argo
     proof -
-      fix \<omega> assume asm0: "\<omega> \<in> atrue \<Delta> tys" "sep_algebra_class.stable \<omega>" "typed (tcfe \<Delta> tys) \<omega>"
+      fix \<omega> assume asm0: "\<omega> \<in> atrue \<Delta> tys" "weak_sep_algebra_class.stable \<omega>" "typed (tcfe \<Delta> tys) \<omega>"
       moreover have "stabilize |\<omega>| \<in> initial_vcg_states_equi (t2a_ctxt ?ctxt ?\<Lambda>)"
         apply (rule stabilize_core_initial_state)
         apply (simp add: calculation(3))

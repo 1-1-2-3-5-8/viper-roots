@@ -212,7 +212,7 @@ record ('v, 'c) abs_type_context =
   custom_context :: 'c
 
 locale typed_state =
-    fixes wf_custom_state :: "'c \<Rightarrow> ('a :: sep_algebra) \<Rightarrow> bool"
+    fixes wf_custom_state :: "'c \<Rightarrow> ('a :: weak_sep_algebra) \<Rightarrow> bool"
   assumes wf_custom_state_sum: "Some x = a \<oplus> b \<Longrightarrow> wf_custom_state \<Gamma> a \<Longrightarrow> wf_custom_state \<Gamma> b \<Longrightarrow> wf_custom_state \<Gamma> x"
       and wf_custom_state_smaller: "a \<succeq> b \<Longrightarrow> wf_custom_state \<Gamma> a \<Longrightarrow> wf_custom_state \<Gamma> b"
       and wf_custom_state_core_aux: "wf_custom_state \<Gamma> |x| \<Longrightarrow> wf_custom_state \<Gamma> x"

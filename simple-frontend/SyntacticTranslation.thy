@@ -44,7 +44,7 @@ lemma verifies_more_seq:
     shows "verifies_more \<Gamma> (Seq C1 C2) (Seq C1' C2')"
 proof (rule verifies_moreI)
   fix \<omega> S'
-  assume asm0: "sep_algebra_class.stable \<omega>" "typed \<Gamma> \<omega>"
+  assume asm0: "weak_sep_algebra_class.stable \<omega>" "typed \<Gamma> \<omega>"
   assume "ConcreteSemantics.red_stmt \<Gamma> (C1' ;; C2') \<omega> S'"
   then show "\<exists>S. S \<subseteq> S' \<and> ConcreteSemantics.red_stmt \<Gamma> (C1 ;; C2) \<omega> S"
   proof (rule elim_seq_compo)
@@ -83,16 +83,16 @@ qed
 
 (* everything accepted by e' is also accepted by e *)
 definition exp_refined_by where
-  "exp_refined_by \<Gamma> e e' = (\<forall>\<omega> v. sep_algebra_class.stable \<omega> \<and> typed \<Gamma> \<omega> \<and> e' \<omega> = Some v \<longrightarrow> e \<omega> = Some v)"
+  "exp_refined_by \<Gamma> e e' = (\<forall>\<omega> v. weak_sep_algebra_class.stable \<omega> \<and> typed \<Gamma> \<omega> \<and> e' \<omega> = Some v \<longrightarrow> e \<omega> = Some v)"
 
 lemma exp_refined_byI:
-  assumes "\<And>\<omega> v. sep_algebra_class.stable \<omega> \<Longrightarrow> typed \<Gamma> \<omega> \<Longrightarrow> e' \<omega> = Some v \<Longrightarrow> e \<omega> = Some v"
+  assumes "\<And>\<omega> v. weak_sep_algebra_class.stable \<omega> \<Longrightarrow> typed \<Gamma> \<omega> \<Longrightarrow> e' \<omega> = Some v \<Longrightarrow> e \<omega> = Some v"
   shows "exp_refined_by \<Gamma> e e'"
   by (simp add: assms exp_refined_by_def)
 
 lemma exp_refined_byE:
   assumes "exp_refined_by \<Gamma> e e'"
-      and "sep_algebra_class.stable \<omega>"
+      and "weak_sep_algebra_class.stable \<omega>"
       and "typed \<Gamma> \<omega>"
       and "e' \<omega> = Some v"
     shows "e \<omega> = Some v"
@@ -110,7 +110,7 @@ lemma verifies_more_if:
     shows "verifies_more \<Gamma> (If b C1 C2) (If b' C1' C2')"
 proof (rule verifies_moreI)
   fix \<omega> S'
-  assume asm0: "sep_algebra_class.stable \<omega>" "typed \<Gamma> \<omega>"
+  assume asm0: "weak_sep_algebra_class.stable \<omega>" "typed \<Gamma> \<omega>"
   assume "ConcreteSemantics.red_stmt \<Gamma> (abs_stmt.If b' C1' C2') \<omega> S'"
   then show "\<exists>S\<subseteq>S'. ConcreteSemantics.red_stmt \<Gamma> (abs_stmt.If b C1 C2) \<omega> S"
   proof (rule ConcreteSemantics.red_stmt_If_elim)
@@ -145,11 +145,11 @@ lemma verifies_more_trans:
     shows "verifies_more \<Gamma> C1 C3"
 proof (rule verifies_moreI)
   fix \<omega> S3
-  assume "sep_algebra_class.stable \<omega>" "typed \<Gamma> \<omega>" "ConcreteSemantics.red_stmt \<Gamma> C3 \<omega> S3"
+  assume "weak_sep_algebra_class.stable \<omega>" "typed \<Gamma> \<omega>" "ConcreteSemantics.red_stmt \<Gamma> C3 \<omega> S3"
   then obtain S2 where "S2 \<subseteq> S3" "ConcreteSemantics.red_stmt \<Gamma> C2 \<omega> S2"
     by (meson assms(2) verifies_moreE)
   then show "\<exists>S\<subseteq>S3. ConcreteSemantics.red_stmt \<Gamma> C1 \<omega> S"
-    by (meson \<open>sep_algebra_class.stable \<omega>\<close> \<open>typed \<Gamma> \<omega>\<close> assms(1) dual_order.trans verifies_moreE)
+    by (meson \<open>weak_sep_algebra_class.stable \<omega>\<close> \<open>typed \<Gamma> \<omega>\<close> assms(1) dual_order.trans verifies_moreE)
 qed
 
 lemma verifies_more_local_assign:
@@ -162,16 +162,16 @@ lemma verifies_more_local_assign:
 lemma verifies_more_exhale:
   assumes "\<And>a. typed \<Gamma> a \<Longrightarrow> a \<in> A' \<Longrightarrow> a \<in> A"
 (* Weaker than A' \<subseteq> A *)
-(* assumes "\<And>\<omega>' \<omega> a. sep_algebra_class.stable \<omega> \<Longrightarrow> typed \<Gamma> \<omega> \<Longrightarrow> a \<in> A' \<Longrightarrow> Some \<omega> = \<omega>' \<oplus> a \<Longrightarrow> sep_algebra_class.stable \<omega>' \<Longrightarrow> a \<in> A" *)
+(* assumes "\<And>\<omega>' \<omega> a. weak_sep_algebra_class.stable \<omega> \<Longrightarrow> typed \<Gamma> \<omega> \<Longrightarrow> a \<in> A' \<Longrightarrow> Some \<omega> = \<omega>' \<oplus> a \<Longrightarrow> weak_sep_algebra_class.stable \<omega>' \<Longrightarrow> a \<in> A" *)
   shows "verifies_more \<Gamma> (Exhale A) (Exhale A')"
 proof (rule verifies_moreI)
   fix \<omega> S'
-  assume asm0: "sep_algebra_class.stable \<omega>" "typed \<Gamma> \<omega>"
+  assume asm0: "weak_sep_algebra_class.stable \<omega>" "typed \<Gamma> \<omega>"
   assume "ConcreteSemantics.red_stmt \<Gamma> (abs_stmt.Exhale A') \<omega> S'"
   then show "\<exists>S\<subseteq>S'. ConcreteSemantics.red_stmt \<Gamma> (abs_stmt.Exhale A) \<omega> S"
   proof (rule ConcreteSemantics.red_stmt_Exhale_elim)
     fix a \<omega>'
-    assume asm1: "S' = {\<omega>'}" "a \<in> A'" "Some \<omega> = \<omega>' \<oplus> a" "sep_algebra_class.stable \<omega>'"
+    assume asm1: "S' = {\<omega>'}" "a \<in> A'" "Some \<omega> = \<omega>' \<oplus> a" "weak_sep_algebra_class.stable \<omega>'"
     then have "a \<in> A" using assms(1)
       using TypedEqui.typed_smaller asm0(2) greater_equiv by blast
     then show "\<exists>S\<subseteq>S'. ConcreteSemantics.red_stmt \<Gamma> (abs_stmt.Exhale A) \<omega> S"
@@ -181,21 +181,21 @@ qed
 
 
 lemma verifies_more_inhale_complex:
-  assumes "\<And>\<omega>. sep_algebra_class.stable \<omega> \<Longrightarrow> typed \<Gamma> \<omega> \<Longrightarrow> rel_stable_assertion \<omega> A' \<Longrightarrow> rel_stable_assertion \<omega> A"
-      and "\<And>\<omega>' \<omega> a. sep_algebra_class.stable \<omega> \<Longrightarrow> a \<in> A \<Longrightarrow> Some \<omega>' = \<omega> \<oplus> a \<Longrightarrow> 
-sep_algebra_class.stable \<omega>' \<Longrightarrow> typed \<Gamma> \<omega>' \<Longrightarrow> (\<exists>a' \<in> A'. Some \<omega>' = \<omega> \<oplus> a')"
+  assumes "\<And>\<omega>. weak_sep_algebra_class.stable \<omega> \<Longrightarrow> typed \<Gamma> \<omega> \<Longrightarrow> rel_stable_assertion \<omega> A' \<Longrightarrow> rel_stable_assertion \<omega> A"
+      and "\<And>\<omega>' \<omega> a. weak_sep_algebra_class.stable \<omega> \<Longrightarrow> a \<in> A \<Longrightarrow> Some \<omega>' = \<omega> \<oplus> a \<Longrightarrow> 
+weak_sep_algebra_class.stable \<omega>' \<Longrightarrow> typed \<Gamma> \<omega>' \<Longrightarrow> (\<exists>a' \<in> A'. Some \<omega>' = \<omega> \<oplus> a')"
   shows "verifies_more \<Gamma> (Inhale A) (Inhale A')"
 proof (rule verifies_moreI)
   fix \<omega> S'
-  assume asm0: "sep_algebra_class.stable \<omega>" "typed \<Gamma> \<omega>"
+  assume asm0: "weak_sep_algebra_class.stable \<omega>" "typed \<Gamma> \<omega>"
   assume "ConcreteSemantics.red_stmt \<Gamma> (abs_stmt.Inhale A') \<omega> S'"
   then show "\<exists>S\<subseteq>S'. ConcreteSemantics.red_stmt \<Gamma> (abs_stmt.Inhale A) \<omega> S"
   proof (rule ConcreteSemantics.red_stmt_Inhale_elim)
-    assume asm1: "S' = Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Gamma> \<omega>) ({\<omega>} \<otimes> A')"
+    assume asm1: "S' = Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Gamma> \<omega>) ({\<omega>} \<otimes> A')"
       "rel_stable_assertion \<omega> A'"
-    then have "ConcreteSemantics.red_stmt \<Gamma> (abs_stmt.Inhale A) \<omega> (Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Gamma> \<omega>) ({\<omega>} \<otimes> A))"
+    then have "ConcreteSemantics.red_stmt \<Gamma> (abs_stmt.Inhale A) \<omega> (Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Gamma> \<omega>) ({\<omega>} \<otimes> A))"
       by (simp add: ConcreteSemantics.RedInhale asm0(1) asm0(2) assms(1))
-    moreover have "Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Gamma> \<omega>) ({\<omega>} \<otimes> A) \<subseteq> Set.filter (\<lambda>\<omega>. sep_algebra_class.stable \<omega> \<and> typed \<Gamma> \<omega>) ({\<omega>} \<otimes> A')"
+    moreover have "Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Gamma> \<omega>) ({\<omega>} \<otimes> A) \<subseteq> Set.filter (\<lambda>\<omega>. weak_sep_algebra_class.stable \<omega> \<and> typed \<Gamma> \<omega>) ({\<omega>} \<otimes> A')"
       by (smt (verit, ccfv_SIG) asm0(1) assms(2) member_filter singletonD subsetI x_elem_set_product)
     ultimately show "\<exists>S\<subseteq>S'. ConcreteSemantics.red_stmt \<Gamma> (abs_stmt.Inhale A) \<omega> S"
       by (metis (no_types, lifting) asm1(1))
@@ -203,12 +203,12 @@ proof (rule verifies_moreI)
 qed
 
 lemma verifies_more_inhale:
-  assumes "\<And>\<omega>. sep_algebra_class.stable \<omega> \<Longrightarrow> typed \<Gamma> \<omega> \<Longrightarrow> rel_stable_assertion \<omega> A' \<Longrightarrow> rel_stable_assertion \<omega> A"
+  assumes "\<And>\<omega>. weak_sep_algebra_class.stable \<omega> \<Longrightarrow> typed \<Gamma> \<omega> \<Longrightarrow> rel_stable_assertion \<omega> A' \<Longrightarrow> rel_stable_assertion \<omega> A"
       and "\<And>a. typed \<Gamma> a \<Longrightarrow> a \<in> A \<Longrightarrow> a \<in> A'"
 (* Weaker than A \<subseteq> A' *)
     shows "verifies_more \<Gamma> (Inhale A) (Inhale A')"
 proof (rule verifies_more_inhale_complex)
-  show "\<And>\<omega>' \<omega> a. sep_algebra_class.stable \<omega> \<Longrightarrow> a \<in> A \<Longrightarrow> Some \<omega>' = \<omega> \<oplus> a \<Longrightarrow> sep_algebra_class.stable \<omega>' \<Longrightarrow> typed \<Gamma> \<omega>' \<Longrightarrow> \<exists>a'\<in>A'. Some \<omega>' = \<omega> \<oplus> a'"
+  show "\<And>\<omega>' \<omega> a. weak_sep_algebra_class.stable \<omega> \<Longrightarrow> a \<in> A \<Longrightarrow> Some \<omega>' = \<omega> \<oplus> a \<Longrightarrow> weak_sep_algebra_class.stable \<omega>' \<Longrightarrow> typed \<Gamma> \<omega>' \<Longrightarrow> \<exists>a'\<in>A'. Some \<omega>' = \<omega> \<oplus> a'"
     using TypedEqui.typed_smaller assms(2) greater_equiv by blast
 qed (simp add: assms(1))
 
@@ -218,7 +218,7 @@ lemma verifies_more_field_assign:
   shows "verifies_more \<Gamma> (Custom (FieldAssign r f e)) (Custom (FieldAssign r' f e'))"
 proof (rule verifies_moreI)
   fix \<omega> S'
-  assume asm0: "sep_algebra_class.stable \<omega>" "typed \<Gamma> \<omega>"
+  assume asm0: "weak_sep_algebra_class.stable \<omega>" "typed \<Gamma> \<omega>"
   assume "ConcreteSemantics.red_stmt \<Gamma> (Custom (custom.FieldAssign r' f e')) \<omega> S'"
   then show "\<exists>S\<subseteq>S'. ConcreteSemantics.red_stmt \<Gamma> (Custom (custom.FieldAssign r f e)) \<omega> S"
   proof (rule ConcreteSemantics.red_stmt_Custom_elim)
@@ -267,7 +267,7 @@ lemma exp_refined_by_int:
   assumes "typed_exp tys e"
   shows "exp_refined_by (tcfe \<Delta> tys) (semantify_exp e) (make_semantic_exp \<Delta> (translate_exp e))"
 proof (rule exp_refined_byI)
-  fix \<omega> v assume "sep_algebra_class.stable \<omega>" "typed (tcfe \<Delta> tys) \<omega>"
+  fix \<omega> v assume "weak_sep_algebra_class.stable \<omega>" "typed (tcfe \<Delta> tys) \<omega>"
   then have asm0: "store_typed (variables (tcfe \<Delta> tys)) (get_store \<omega>)"
     using TypedEqui.typed_def TypedEqui.typed_store_def by blast
 
@@ -399,7 +399,7 @@ lemma verifies_more_setI:
   by (simp add: assms verifies_more_set)
 
 lemma rel_stable_self_framing[simp]:
-  assumes "sep_algebra_class.stable \<omega>"
+  assumes "weak_sep_algebra_class.stable \<omega>"
       and "self_framing A"
   shows "rel_stable_assertion \<omega> A"
 proof (rule rel_stable_assertionI)
@@ -430,7 +430,7 @@ lemma red_pure_litE:
 
 
 lemma plus_emp_same:
-  assumes "Some \<omega> = stabilize |x| \<oplus> y"
+  assumes "Some (\<omega> :: ('a :: sep_algebra)) = stabilize |x| \<oplus> y"
   shows "\<omega> = y"
   by (simp add: assms commutative stabilize_core_emp)
 
@@ -510,7 +510,7 @@ lemma up_close_core_id [simp] :
   by (metis asso1 pure_def)
 
 lemma in_up_close_core_stabilize :
-  assumes "Stable A"
+  assumes "Stable (A :: ('a :: sep_algebra) assertion)"
   shows "a \<in> up_close_core A \<longleftrightarrow> stabilize a \<in> A"
   apply (simp add:up_close_core_def emp_core_def add_set_def)
   apply (rule iffI)
@@ -638,7 +638,7 @@ lemma empty_satisfies_star:
 
 lemma in_bool_to_assertion_emp:
   assumes "P"
-  shows "stabilize |x| \<in> \<llangle>P\<rrangle>"
+  shows "stabilize |(x :: ('a :: sep_algebra))| \<in> \<llangle>P\<rrangle>"
   by (metis Stabilize_up_close_core Stable_def Stable_emp_core assms bool_to_assertion_true core_in_emp_core emp_star_left_id in_Stabilize in_mono up_close_core_def)
 
 context semantics
@@ -843,7 +843,7 @@ lemma bexp_refined_by:
   assumes "typed_bexp tys b"
   shows "exp_refined_by (tcfe \<Delta> tys) (semantify_bexp b) (make_semantic_bexp \<Delta> (translate_bexp b))"
 proof (rule exp_refined_byI)
-  fix \<omega> v assume asm0: "sep_algebra_class.stable \<omega>" "typed (tcfe \<Delta> tys) \<omega>"
+  fix \<omega> v assume asm0: "weak_sep_algebra_class.stable \<omega>" "typed (tcfe \<Delta> tys) \<omega>"
   have "typed_bexp tys b \<Longrightarrow> make_semantic_bexp \<Delta> (translate_bexp b) \<omega> = Some v \<Longrightarrow> semantify_bexp b \<omega> = Some v"
   proof (induct b arbitrary: v)
     case (Beq e1 e2)
@@ -1199,7 +1199,7 @@ proof (rule sound_translation[OF assms(1-2) assms(3)])
 
   show "ConcreteSemantics.verifies_set (tcfe \<Delta> tys) (atrue \<Delta> tys) (abs_stmt.Inhale P ;; fst (translate \<Delta> tys C) ;; abs_stmt.Exhale Q)"
   proof (rule ConcreteSemantics.verifies_setI)
-    fix \<omega> assume asm0: "\<omega> \<in> atrue \<Delta> tys" "sep_algebra_class.stable \<omega>" "typed (tcfe \<Delta> tys) \<omega>"
+    fix \<omega> assume asm0: "\<omega> \<in> atrue \<Delta> tys" "weak_sep_algebra_class.stable \<omega>" "typed (tcfe \<Delta> tys) \<omega>"
     show "ConcreteSemantics.verifies (tcfe \<Delta> tys) (abs_stmt.Inhale P ;; fst (translate \<Delta> tys C) ;; abs_stmt.Exhale Q) \<omega>"
     proof (rule verifies_more_verifies)
       show "verifies_more (tcfe \<Delta> tys) (abs_stmt.Inhale P ;; fst (translate \<Delta> tys C) ;; abs_stmt.Exhale Q)

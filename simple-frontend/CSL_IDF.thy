@@ -22,17 +22,17 @@ definition write_dom where
   "write_dom \<omega> = { l. get_vm \<omega> (l, field_val) = 1 }"
 
 definition no_aborts where
-  "no_aborts \<Delta> C s0 \<tau> \<omega>0 \<longleftrightarrow> (\<forall>\<omega>0' \<omega>f. TypedEqui.typed \<Delta> (Ag s0, \<tau>, \<omega>0') \<and> sep_algebra_class.stable \<omega>0' \<and> sep_algebra_class.stable \<omega>f \<and> Some \<omega>0' = \<omega>0 \<oplus> \<omega>f \<and> binary_mask \<omega>0' \<longrightarrow> \<not> aborts C (s0, get_vh \<omega>0'))"
+  "no_aborts \<Delta> C s0 \<tau> \<omega>0 \<longleftrightarrow> (\<forall>\<omega>0' \<omega>f. TypedEqui.typed \<Delta> (Ag s0, \<tau>, \<omega>0') \<and> weak_sep_algebra_class.stable \<omega>0' \<and> weak_sep_algebra_class.stable \<omega>f \<and> Some \<omega>0' = \<omega>0 \<oplus> \<omega>f \<and> binary_mask \<omega>0' \<longrightarrow> \<not> aborts C (s0, get_vh \<omega>0'))"
 
 lemma no_abortsI[intro]:
-  assumes "\<And>\<omega>0' \<omega>f. TypedEqui.typed \<Delta> (Ag s0, \<tau>, \<omega>0') \<Longrightarrow> sep_algebra_class.stable \<omega>0' \<Longrightarrow> sep_algebra_class.stable \<omega>f \<Longrightarrow> Some \<omega>0' = \<omega>0 \<oplus> \<omega>f \<and> binary_mask \<omega>0' \<Longrightarrow> \<not> aborts C (s0, get_vh \<omega>0')"
+  assumes "\<And>\<omega>0' \<omega>f. TypedEqui.typed \<Delta> (Ag s0, \<tau>, \<omega>0') \<Longrightarrow> weak_sep_algebra_class.stable \<omega>0' \<Longrightarrow> weak_sep_algebra_class.stable \<omega>f \<Longrightarrow> Some \<omega>0' = \<omega>0 \<oplus> \<omega>f \<and> binary_mask \<omega>0' \<Longrightarrow> \<not> aborts C (s0, get_vh \<omega>0')"
   shows "no_aborts \<Delta> C s0 \<tau> \<omega>0"
   using assms no_aborts_def by blast
 
 lemma no_abortsE:
   assumes "no_aborts \<Delta> C s0 \<tau> \<omega>0"
-      and "sep_algebra_class.stable \<omega>0'"
-      and "sep_algebra_class.stable \<omega>f"
+      and "weak_sep_algebra_class.stable \<omega>0'"
+      and "weak_sep_algebra_class.stable \<omega>f"
       and "Some \<omega>0' = \<omega>0 \<oplus> \<omega>f"
       and "binary_mask \<omega>0'"
       and "TypedEqui.typed \<Delta> (Ag s0, \<tau>, \<omega>0')"
@@ -54,19 +54,19 @@ where
   \<and> accesses C s0 \<subseteq> read_dom \<omega>0
   \<and> writes C s0 \<subseteq> write_dom \<omega>0
   \<and> no_aborts \<Delta> C s0 \<tau> \<omega>0
-  \<and> (\<forall>\<omega>0' \<omega>f C' \<sigma>'. sep_algebra_class.stable \<omega>f \<and> Some \<omega>0' = \<omega>0 \<oplus> \<omega>f \<and> binary_mask \<omega>0' \<and> TypedEqui.typed \<Delta> (Ag s0, \<tau>, \<omega>0')
+  \<and> (\<forall>\<omega>0' \<omega>f C' \<sigma>'. weak_sep_algebra_class.stable \<omega>f \<and> Some \<omega>0' = \<omega>0 \<oplus> \<omega>f \<and> binary_mask \<omega>0' \<and> TypedEqui.typed \<Delta> (Ag s0, \<tau>, \<omega>0')
 \<longrightarrow>
   (\<langle>C, concretize s0 \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>)
-\<longrightarrow> (\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe \<Delta> n C' (fst \<sigma>') \<tau> \<omega>1 Q))"
+\<longrightarrow> (\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe \<Delta> n C' (fst \<sigma>') \<tau> \<omega>1 Q))"
 
 lemma safeI:
   assumes "C = Cskip \<Longrightarrow> (Ag s0, \<tau>, \<omega>0) \<in> Q"
       and "accesses C s0 \<subseteq> read_dom \<omega>0"
       and "writes C s0 \<subseteq> write_dom \<omega>0"
       and "no_aborts \<Delta> C s0 \<tau> \<omega>0"
-      and "\<And>\<omega>0' \<omega>f C' \<sigma>'. sep_algebra_class.stable \<omega>f \<Longrightarrow> Some \<omega>0' = \<omega>0 \<oplus> \<omega>f \<Longrightarrow> binary_mask \<omega>0' \<Longrightarrow> TypedEqui.typed \<Delta> (Ag s0, \<tau>, \<omega>0') \<Longrightarrow>
+      and "\<And>\<omega>0' \<omega>f C' \<sigma>'. weak_sep_algebra_class.stable \<omega>f \<Longrightarrow> Some \<omega>0' = \<omega>0 \<oplus> \<omega>f \<Longrightarrow> binary_mask \<omega>0' \<Longrightarrow> TypedEqui.typed \<Delta> (Ag s0, \<tau>, \<omega>0') \<Longrightarrow>
   (\<langle>C, concretize s0 \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>)
-\<Longrightarrow> (\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe \<Delta> n C' (fst \<sigma>') \<tau> \<omega>1 Q)"
+\<Longrightarrow> (\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe \<Delta> n C' (fst \<sigma>') \<tau> \<omega>1 Q)"
     shows "safe \<Delta> (Suc n) C s0 \<tau> \<omega>0 Q"
   using assms safe.simps(1) by auto
 
@@ -75,10 +75,10 @@ lemma safeI_alt:
   assumes "C = Cskip \<Longrightarrow> (Ag s0, \<tau>, \<omega>0) \<in> Q"
       and "accesses C s0 \<subseteq> read_dom \<omega>0"
       and "writes C s0 \<subseteq> write_dom \<omega>0"
-      and "\<And>\<omega>0' \<omega>f. TypedEqui.typed \<Delta> (Ag s0, \<tau>, \<omega>0') \<Longrightarrow> sep_algebra_class.stable \<omega>0' \<Longrightarrow> sep_algebra_class.stable \<omega>f \<Longrightarrow> Some \<omega>0' = \<omega>0 \<oplus> \<omega>f \<Longrightarrow> binary_mask \<omega>0' \<Longrightarrow> aborts C (concretize s0 \<omega>0') \<Longrightarrow> False"
-      and "\<And>\<omega>0' \<omega>f C' \<sigma>'. TypedEqui.typed \<Delta> (Ag s0, \<tau>, \<omega>0') \<Longrightarrow> sep_algebra_class.stable \<omega>f \<Longrightarrow> Some \<omega>0' = \<omega>0 \<oplus> \<omega>f \<Longrightarrow> binary_mask \<omega>0' \<Longrightarrow>
+      and "\<And>\<omega>0' \<omega>f. TypedEqui.typed \<Delta> (Ag s0, \<tau>, \<omega>0') \<Longrightarrow> weak_sep_algebra_class.stable \<omega>0' \<Longrightarrow> weak_sep_algebra_class.stable \<omega>f \<Longrightarrow> Some \<omega>0' = \<omega>0 \<oplus> \<omega>f \<Longrightarrow> binary_mask \<omega>0' \<Longrightarrow> aborts C (concretize s0 \<omega>0') \<Longrightarrow> False"
+      and "\<And>\<omega>0' \<omega>f C' \<sigma>'. TypedEqui.typed \<Delta> (Ag s0, \<tau>, \<omega>0') \<Longrightarrow> weak_sep_algebra_class.stable \<omega>f \<Longrightarrow> Some \<omega>0' = \<omega>0 \<oplus> \<omega>f \<Longrightarrow> binary_mask \<omega>0' \<Longrightarrow>
   (\<langle>C, concretize s0 \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>)
-\<Longrightarrow> (\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe \<Delta> n C' (fst \<sigma>') \<tau> \<omega>1 Q)"
+\<Longrightarrow> (\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe \<Delta> n C' (fst \<sigma>') \<tau> \<omega>1 Q)"
     shows "safe \<Delta> (Suc n) C s0 \<tau> \<omega>0 Q"
   using assms safe.simps(1) 
   by fastforce
@@ -89,24 +89,24 @@ lemma safeE:
       and "accesses C s0 \<subseteq> read_dom \<omega>0"
       and "writes C s0 \<subseteq> write_dom \<omega>0"
       and "no_aborts \<Delta> C s0 \<tau> \<omega>0"
-      and "sep_algebra_class.stable \<omega>f \<and> Some \<omega>0' = \<omega>0 \<oplus> \<omega>f \<and> binary_mask \<omega>0' \<and> (\<langle>C, concretize s0 \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>)
+      and "weak_sep_algebra_class.stable \<omega>f \<and> Some \<omega>0' = \<omega>0 \<oplus> \<omega>f \<and> binary_mask \<omega>0' \<and> (\<langle>C, concretize s0 \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>)
   \<and> TypedEqui.typed \<Delta> (Ag s0, \<tau>, \<omega>0')
-\<Longrightarrow> (\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe \<Delta> n C' (fst \<sigma>') \<tau> \<omega>1 Q)"
+\<Longrightarrow> (\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe \<Delta> n C' (fst \<sigma>') \<tau> \<omega>1 Q)"
   using assms safe.simps(1) apply simp_all
   by (metis prod.collapse)
 
 definition CSL :: "'a concrete_type_context \<Rightarrow> 'a equi_state set \<Rightarrow> cmd \<Rightarrow> 'a equi_state set \<Rightarrow> bool" where
-  "CSL \<Delta> P C Q \<longleftrightarrow> (\<forall>n s \<tau> \<omega>. TypedEqui.typed \<Delta> (Ag s, \<tau>, \<omega>) \<and> (Ag s, \<tau>, \<omega>) \<in> P \<and> sep_algebra_class.stable \<omega> \<longrightarrow> safe \<Delta> n C s \<tau> \<omega> Q)"
+  "CSL \<Delta> P C Q \<longleftrightarrow> (\<forall>n s \<tau> \<omega>. TypedEqui.typed \<Delta> (Ag s, \<tau>, \<omega>) \<and> (Ag s, \<tau>, \<omega>) \<in> P \<and> weak_sep_algebra_class.stable \<omega> \<longrightarrow> safe \<Delta> n C s \<tau> \<omega> Q)"
 
 lemma CSL_I:
-  assumes "\<And>n s \<tau> \<omega>. TypedEqui.typed \<Delta> (Ag s, \<tau>, \<omega>) \<Longrightarrow> (Ag s, \<tau>, \<omega>) \<in> P \<Longrightarrow> sep_algebra_class.stable \<omega> \<Longrightarrow> safe \<Delta> (Suc n) C s \<tau> \<omega> Q"
+  assumes "\<And>n s \<tau> \<omega>. TypedEqui.typed \<Delta> (Ag s, \<tau>, \<omega>) \<Longrightarrow> (Ag s, \<tau>, \<omega>) \<in> P \<Longrightarrow> weak_sep_algebra_class.stable \<omega> \<Longrightarrow> safe \<Delta> (Suc n) C s \<tau> \<omega> Q"
   shows "CSL \<Delta> P C Q"
   by (metis CSL_def assms not0_implies_Suc safe.simps(1))
 
 lemma CSL_E:
   assumes "CSL \<Delta> P C Q"
       and "(Ag s, \<tau>, \<omega>) \<in> P"
-      and "sep_algebra_class.stable \<omega>"
+      and "weak_sep_algebra_class.stable \<omega>"
       and "TypedEqui.typed \<Delta> (Ag s, \<tau>, \<omega>)"
     shows "safe \<Delta> n C s \<tau> \<omega> Q"
   using CSL_def assms by fast
@@ -132,7 +132,7 @@ lemma no_aborts_agrees:
     shows "no_aborts \<Delta> C s' \<tau> \<omega>"
 proof (rule no_abortsI)
   fix \<omega>0' \<omega>f
-  assume asm0: "TypedEqui.typed \<Delta> (Ag s', \<tau>, \<omega>0')" "sep_algebra_class.stable \<omega>0'" "sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f \<and> binary_mask \<omega>0'"
+  assume asm0: "TypedEqui.typed \<Delta> (Ag s', \<tau>, \<omega>0')" "weak_sep_algebra_class.stable \<omega>0'" "weak_sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f \<and> binary_mask \<omega>0'"
   then have "TypedEqui.typed \<Delta> (Ag s, \<tau>, \<omega>0')"
     by (simp add: TypedEqui.typed_def assms(3) get_abs_state_def)
   then show "\<not> aborts C (concretize s' \<omega>0')"
@@ -247,7 +247,7 @@ proof -
 qed
 
 lemma mk_virtual_state_charact[simp]:
-  "sep_algebra_class.stable (mk_virtual_state h)"
+  "weak_sep_algebra_class.stable (mk_virtual_state h)"
   "binary_mask (mk_virtual_state h)"
   "concretize s (mk_virtual_state h) = (s, h)"
   apply (metis domIff mk_virtual_state_simps(1) mk_virtual_state_simps(2) not_gr_0 one_neq_zero stable_virtual_stateI)
@@ -257,7 +257,7 @@ lemma mk_virtual_state_charact[simp]:
 
 
 lemma binary_mask_and_stable_then_mk_virtual:
-  assumes "sep_algebra_class.stable \<omega>"
+  assumes "weak_sep_algebra_class.stable \<omega>"
       and "binary_mask \<omega>"
     shows "\<omega> = mk_virtual_state (get_vh \<omega>)"
 proof (rule virtual_state_ext)
@@ -303,7 +303,7 @@ lemma typed_then_store_typed[simp]:
 lemma typed_equi_red:
   assumes "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)"
       and "\<langle>C, (s, get_vh \<omega>)\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
-      and "sep_algebra_class.stable \<omega>'"
+      and "weak_sep_algebra_class.stable \<omega>'"
       and "binary_mask \<omega>'"
       and "snd \<sigma>' = get_vh \<omega>'"
       and "well_typed_cmd tys C"
@@ -380,14 +380,14 @@ proof (induct n arbitrary: C s s' \<omega>)
     show "no_aborts (tcfe \<Delta> tys) C s' \<tau> \<omega>"
       by (metis ConcreteSemantics.get_store_Ag_simplifies Suc.prems(1) Suc.prems(2) Suc.prems(3) TypedEqui.typed_def agrees_simps(4) no_aborts_agrees safeE(4))
     fix \<omega>0' \<omega>f C' \<sigma>'
-    assume asm0: "sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'" "\<langle>C, concretize s' \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
+    assume asm0: "weak_sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'" "\<langle>C, concretize s' \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
       "TypedEqui.typed (tcfe \<Delta> tys) (Ag s', \<tau>, \<omega>0')"
     then obtain s'' h' where "\<langle>C, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', (s'', h')\<rangle> \<and> agrees (fvC C \<union> fvA (tcfe \<Delta> tys) Q) (fst \<sigma>') s'' \<and> snd \<sigma>' = h'"
       using red_agrees[OF asm0(4)]
       by (metis Suc.prems(2) Un_upper1 agrees_search(1) fst_conv snd_conv)
     moreover have "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>0')"
       by (metis ConcreteSemantics.get_store_Ag_simplifies Suc.prems(3) TypedEqui.typed_def asm0(5) get_abs_state_def snd_conv)
-    ultimately obtain \<omega>1 \<omega>1' where r1: "Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1'
+    ultimately obtain \<omega>1 \<omega>1' where r1: "Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1'
   \<and> snd (s'', h') = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst (s'', h')) \<tau> \<omega>1 Q"
       using safeE(5)[OF Suc(2), of \<omega>f \<omega>0' C']
       using asm0(1) asm0(2) asm0(3) by blast
@@ -404,7 +404,7 @@ proof (induct n arbitrary: C s s' \<omega>)
           by (simp add: \<open>\<langle>C, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', (s'', h')\<rangle> \<and> agrees (fvC C \<union> fvA (tcfe \<Delta> tys) Q) (fst \<sigma>') s'' \<and> snd \<sigma>' = h'\<close>)
         show "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>0')"
           using \<open>TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>0')\<close> by auto
-        show "sep_algebra_class.stable \<omega>1'"
+        show "weak_sep_algebra_class.stable \<omega>1'"
           using asm0(1) r1 stable_sum by blast
         show "snd (s'', h') = get_vh \<omega>1'"
           using r1 by auto
@@ -418,7 +418,7 @@ proof (induct n arbitrary: C s s' \<omega>)
       show "TypedEqui.typed (tcfe \<Delta> tys) (Ag (fst (s'', h')), \<tau>, \<omega>1)"
         using \<open>TypedEqui.typed (tcfe \<Delta> tys) (Ag (fst (s'', h')), \<tau>, \<omega>1')\<close> greater_def r1 typed_smaller_state by blast
     qed
-    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 Q"
+    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 Q"
       using \<open>\<langle>C, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', (s'', h')\<rangle> \<and> agrees (fvC C \<union> fvA (tcfe \<Delta> tys) Q) (fst \<sigma>') s'' \<and> snd \<sigma>' = h'\<close> r1 by auto
   qed
 qed (simp)
@@ -440,7 +440,7 @@ proof (induct n)
       by (simp add: assms)
     fix \<omega>0' \<omega>f C' \<sigma>'
     assume "\<langle>Cskip, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
-    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe \<Delta> n C' (fst \<sigma>') \<tau> \<omega>1 Q"
+    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe \<Delta> n C' (fst \<sigma>') \<tau> \<omega>1 Q"
       by force
   qed (simp_all)
 qed (simp)
@@ -500,7 +500,7 @@ lemma no_aborts_mono:
     shows "no_aborts \<Delta> C s \<tau> \<omega>'"
 proof (rule no_abortsI)
   fix \<omega>0' \<omega>f
-  assume asm0: "TypedEqui.typed \<Delta> (Ag s, \<tau>, \<omega>0')" "sep_algebra_class.stable \<omega>0'" "sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega>' \<oplus> \<omega>f \<and> binary_mask \<omega>0'"
+  assume asm0: "TypedEqui.typed \<Delta> (Ag s, \<tau>, \<omega>0')" "weak_sep_algebra_class.stable \<omega>0'" "weak_sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega>' \<oplus> \<omega>f \<and> binary_mask \<omega>0'"
   then obtain r where "Some \<omega>0' = \<omega> \<oplus> r"
     using assms(2) bigger_sum_smaller by blast
   then have "Some \<omega>0' = \<omega> \<oplus> stabilize r"
@@ -515,7 +515,7 @@ lemma frame_safe:
       and "fvA (tcfe \<Delta> tys) R \<inter> wrC C = {}"
       and "Some \<omega>' = \<omega> \<oplus> \<omega>f"
       and "(Ag s, \<tau>, \<omega>f) \<in> R"
-      and "sep_algebra_class.stable \<omega>f"
+      and "weak_sep_algebra_class.stable \<omega>f"
       and "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)"
       and "well_typed_cmd tys C"
     shows "safe (tcfe \<Delta> tys) n C s \<tau> \<omega>' (Q \<otimes> R)"
@@ -536,7 +536,7 @@ proof (induct n arbitrary: C \<omega> \<omega>' \<omega>f s)
       using safeE(4)[OF Suc.prems(1)]
       using Suc.prems(3) greater_def no_aborts_mono by blast
     fix \<omega>0' \<omega>f' C' \<sigma>'
-    assume asm0: "sep_algebra_class.stable \<omega>f'" "Some \<omega>0' = \<omega>' \<oplus> \<omega>f'" "binary_mask \<omega>0'" "\<langle>C, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
+    assume asm0: "weak_sep_algebra_class.stable \<omega>f'" "Some \<omega>0' = \<omega>' \<oplus> \<omega>f'" "binary_mask \<omega>0'" "\<langle>C, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
       "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>0')"
     then obtain \<omega>f'' where "Some \<omega>f'' = \<omega>f \<oplus> \<omega>f'"
       by (metis (no_types, opaque_lifting) Suc.prems(3) asso2 option.collapse)
@@ -545,7 +545,7 @@ proof (induct n arbitrary: C \<omega> \<omega>' \<omega>f s)
     moreover have "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>f'')"
       using asm0(5) calculation greater_equiv typed_smaller_state by blast
     ultimately obtain \<omega>1'' \<omega>1' where "Some \<omega>1' = \<omega>1'' \<oplus> \<omega>f'' \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1'" "safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1'' Q"
-      "sep_algebra_class.stable \<omega>1''"
+      "weak_sep_algebra_class.stable \<omega>1''"
       using safeE(5)[OF Suc(2), of \<omega>0' \<omega>f'' C' \<sigma>'] asm0
       by (meson Suc.prems(1) Suc.prems(5) \<open>Some \<omega>f'' = \<omega>f \<oplus> \<omega>f'\<close> safeE(5) stable_sum)
     then obtain \<omega>1 where "Some \<omega>1 = \<omega>1'' \<oplus> \<omega>f"
@@ -577,14 +577,14 @@ proof (induct n arbitrary: C \<omega> \<omega>' \<omega>f s)
       qed (simp add: assms)
       have "TypedEqui.typed (tcfe \<Delta> tys) (Ag (fst \<sigma>'), \<tau>, \<omega>1')"
         using typed_equi_red[OF _ asm0(4)]
-        by (metis Suc.prems(5) Suc.prems(7) \<open>Some \<omega>1' = \<omega>1'' \<oplus> \<omega>f'' \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1'\<close> \<open>Some \<omega>f'' = \<omega>f \<oplus> \<omega>f'\<close> \<open>sep_algebra_class.stable \<omega>1''\<close> asm0(1) asm0(5) stable_sum)
+        by (metis Suc.prems(5) Suc.prems(7) \<open>Some \<omega>1' = \<omega>1'' \<oplus> \<omega>f'' \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1'\<close> \<open>Some \<omega>f'' = \<omega>f \<oplus> \<omega>f'\<close> \<open>weak_sep_algebra_class.stable \<omega>1''\<close> asm0(1) asm0(5) stable_sum)
       then show "TypedEqui.typed (tcfe \<Delta> tys) (Ag (fst \<sigma>'), \<tau>, \<omega>1'')"
         using \<open>Some \<omega>1' = \<omega>1'' \<oplus> \<omega>f'' \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1'\<close> greater_def typed_smaller_state by blast
       show "well_typed_cmd tys C'"
         using Suc.prems(7) asm0(4) well_typed_cmd_red by blast
     qed (simp_all add: Suc.prems)
-    ultimately show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f' \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (Q \<otimes> R)"
-      by (metis Suc.prems(5) \<open>Some \<omega>1' = \<omega>1'' \<oplus> \<omega>f'' \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1'\<close> \<open>Some \<omega>f'' = \<omega>f \<oplus> \<omega>f'\<close> \<open>sep_algebra_class.stable \<omega>1''\<close> asso1 stable_sum)
+    ultimately show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f' \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (Q \<otimes> R)"
+      by (metis Suc.prems(5) \<open>Some \<omega>1' = \<omega>1'' \<oplus> \<omega>f'' \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1'\<close> \<open>Some \<omega>f'' = \<omega>f \<oplus> \<omega>f'\<close> \<open>weak_sep_algebra_class.stable \<omega>1''\<close> asso1 stable_sum)
   qed
 qed (simp)
 
@@ -620,7 +620,7 @@ proposition frame_rule:
       and "well_typed_cmd tys C"
     shows "CSL (tcfe \<Delta> tys) (P \<otimes> R) C (Q \<otimes> R)"
 proof (rule CSL_I)
-  fix n s \<tau> \<omega> assume asm0: "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)" "(Ag s, \<tau>, \<omega>) \<in> P \<otimes> R" "sep_algebra_class.stable \<omega>"
+  fix n s \<tau> \<omega> assume asm0: "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)" "(Ag s, \<tau>, \<omega>) \<in> P \<otimes> R" "weak_sep_algebra_class.stable \<omega>"
     "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)"
   then obtain \<omega>p \<omega>r where r: "Some \<omega> = \<omega>p \<oplus> \<omega>r" "(Ag s, \<tau>, \<omega>p) \<in> P" "(Ag s, \<tau>, \<omega>r) \<in> R"
     by (meson sum_equi_states_easy_decompose)
@@ -628,7 +628,7 @@ proof (rule CSL_I)
   show "safe (tcfe \<Delta> tys) (Suc n) C s \<tau> \<omega> (Q \<otimes> R)"
   proof (rule frame_safe[of _ _ "Suc n" C s \<tau> "stabilize \<omega>p" Q R \<omega> "stabilize \<omega>r"])
     show "Some \<omega> = stabilize \<omega>p \<oplus> stabilize \<omega>r"
-      using \<open>sep_algebra_class.stable \<omega>\<close> stabilize_sum_of_stable r by blast
+      using \<open>weak_sep_algebra_class.stable \<omega>\<close> stabilize_sum_of_stable r by blast
     show "safe (tcfe \<Delta> tys) (Suc n) C s \<tau> (stabilize \<omega>p) Q"
       by (metis (no_types, lifting) CSL_E TypedEqui.typed_state_then_stabilize_typed asm0(1) assms(1) assms(3) commutative greater_equiv r(1) r(2) self_framingE stabilize_equi_state stabilize_is_stable typed_smaller_state)
     show "fvA (tcfe \<Delta> tys) R \<inter> wrC C = {}"
@@ -703,8 +703,8 @@ lemma safe_par:
       and "Some \<omega> = \<omega>1 \<oplus> \<omega>2"
       and "disjoint (fvC C1 \<union> fvA (tcfe \<Delta> tys) Q1) (wrC C2)"
       and "disjoint (fvC C2 \<union> fvA (tcfe \<Delta> tys) Q2) (wrC C1)"
-      and "sep_algebra_class.stable \<omega>1"
-      and "sep_algebra_class.stable \<omega>2"
+      and "weak_sep_algebra_class.stable \<omega>1"
+      and "weak_sep_algebra_class.stable \<omega>2"
       and "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)"
       and "well_typed_cmd tys ({A1} C1 {B1} || {A2} C2 {B2})"
     shows "safe (tcfe \<Delta> tys) n ({A1} C1 {B1} || {A2} C2 {B2}) s \<tau> \<omega> (Q1 \<otimes> Q2)"
@@ -723,7 +723,7 @@ proof (induct n arbitrary: C1 C2 \<omega>1 \<omega>2 \<omega> s)
         by simp
     qed
     fix \<omega>0' \<omega>f
-    assume asm0: "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>0')" "sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
+    assume asm0: "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>0')" "weak_sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
     then have types: "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>1) \<and> TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>2)"
       by (meson Suc.prems(3) greater_def greater_equiv typed_smaller_state)
     show "aborts ({A1} C1 {B1} || {A2} C2 {B2}) (concretize s \<omega>0') \<Longrightarrow> False"
@@ -739,7 +739,7 @@ proof (induct n arbitrary: C1 C2 \<omega>1 \<omega>2 \<omega> s)
         proof -
           assume "aborts C2 (concretize s \<omega>0')"
           then have "\<forall>v. \<omega>f \<oplus> \<omega> \<noteq> v \<oplus> \<omega>2"
-            by (metis (no_types) Suc.prems(3) Suc.prems(6) Suc.prems(7) \<open>\<And>\<omega>f \<omega>0'. \<lbrakk>sep_algebra_class.stable \<omega>0'; sep_algebra_class.stable \<omega>f; Some \<omega>0' = \<omega>2 \<oplus> \<omega>f; binary_mask \<omega>0'; TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>0')\<rbrakk> \<Longrightarrow> \<not> aborts C2 (concretize s \<omega>0')\<close> already_stable asm0(1) asm0(2) asm0(3) asm0(4) commutative stabilize_is_stable stabilize_sum_of_stable stable_sum)
+            by (metis (no_types) Suc.prems(3) Suc.prems(6) Suc.prems(7) \<open>\<And>\<omega>f \<omega>0'. \<lbrakk>weak_sep_algebra_class.stable \<omega>0'; weak_sep_algebra_class.stable \<omega>f; Some \<omega>0' = \<omega>2 \<oplus> \<omega>f; binary_mask \<omega>0'; TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>0')\<rbrakk> \<Longrightarrow> \<not> aborts C2 (concretize s \<omega>0')\<close> already_stable asm0(1) asm0(2) asm0(3) asm0(4) commutative stabilize_is_stable stabilize_sum_of_stable stable_sum)
           then show ?thesis
             by (metis (no_types) Suc.prems(3) asm0(3) commutative greater_equiv succ_trans)
         qed
@@ -756,10 +756,10 @@ proof (induct n arbitrary: C1 C2 \<omega>1 \<omega>2 \<omega> s)
 
     fix C' \<sigma>'
     assume asm1: "\<langle>({A1} C1 {B1} || {A2} C2 {B2}), concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
-    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (Q1 \<otimes> Q2)"
+    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (Q1 \<otimes> Q2)"
     proof (rule red_par_cases)
       show "C' = Cskip \<Longrightarrow> \<sigma>' = concretize s \<omega>0' \<Longrightarrow> C1 = Cskip \<Longrightarrow> C2 = Cskip
-  \<Longrightarrow> \<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (Q1 \<otimes> Q2)"
+  \<Longrightarrow> \<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (Q1 \<otimes> Q2)"
         using safeE(1)[OF Suc.prems(1)] safeE(1)[OF Suc.prems(2)]
         by (smt (verit) Suc.prems(3) Suc.prems(6) Suc.prems(7) asm0(3) asm0(4) fst_conv safe_skip snd_conv stable_sum sum_equi_states_easy x_elem_set_product)
       fix C1'
@@ -769,7 +769,7 @@ proof (induct n arbitrary: C1 C2 \<omega>1 \<omega>2 \<omega> s)
       then have "Some \<omega>0' = \<omega>1 \<oplus> \<omega>f'"
         using Suc.prems(3) asm0(3) asso1 by force
       then obtain \<omega>a \<omega>a' where ra: "Some \<omega>a' = \<omega>a \<oplus> \<omega>f' \<and> binary_mask \<omega>a' \<and> snd \<sigma>' = get_vh \<omega>a'" "safe (tcfe \<Delta> tys) n C1' (fst \<sigma>') \<tau> \<omega>a Q1"
-        "sep_algebra_class.stable \<omega>a"
+        "weak_sep_algebra_class.stable \<omega>a"
         using safeE(5)[OF Suc(2), of \<omega>f' \<omega>0' C1' \<sigma>'] asm0 asm2(2)
         using Suc.prems(7) \<open>Some \<omega>f' = \<omega>2 \<oplus> \<omega>f\<close> stable_sum by blast
       moreover have "TypedEqui.typed (tcfe \<Delta> tys) (Ag (fst \<sigma>'), \<tau>, \<omega>a')"
@@ -808,9 +808,9 @@ proof (induct n arbitrary: C1 C2 \<omega>1 \<omega>2 \<omega> s)
         show "well_typed_cmd tys {A1} C1' {B1} || {A2} C2 {B2}"
           using Suc.prems(9) asm1 asm2(1) well_typed_cmd_red by blast
       qed (simp_all add: Suc disjoint_def ra(3))
-      ultimately show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (Q1 \<otimes> Q2)"
+      ultimately show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (Q1 \<otimes> Q2)"
         using \<open>Some \<omega>a' = \<omega>' \<oplus> \<omega>f\<close> ra(1)
-        using Suc.prems(7) \<open>Some \<omega>' = \<omega>a \<oplus> \<omega>2\<close> \<open>sep_algebra_class.stable \<omega>a\<close> stable_sum
+        using Suc.prems(7) \<open>Some \<omega>' = \<omega>a \<oplus> \<omega>2\<close> \<open>weak_sep_algebra_class.stable \<omega>a\<close> stable_sum
         using asm2(1) by blast
     next
       fix C2'
@@ -820,7 +820,7 @@ proof (induct n arbitrary: C1 C2 \<omega>1 \<omega>2 \<omega> s)
       then have "Some \<omega>0' = \<omega>2 \<oplus> \<omega>f'"
         by (metis Suc.prems(3) asm0(3) asso1 commutative)
       then obtain \<omega>a \<omega>a' where ra: "Some \<omega>a' = \<omega>a \<oplus> \<omega>f' \<and> binary_mask \<omega>a' \<and> snd \<sigma>' = get_vh \<omega>a'" "safe (tcfe \<Delta> tys) n C2' (fst \<sigma>') \<tau> \<omega>a Q2"
-        "sep_algebra_class.stable \<omega>a"
+        "weak_sep_algebra_class.stable \<omega>a"
         using safeE(5)[OF Suc(3), of \<omega>f' \<omega>0' C2' \<sigma>'] asm0 asm2(2)
         using Suc.prems(6) \<open>Some \<omega>f' = \<omega>1 \<oplus> \<omega>f\<close> stable_sum by blast
       moreover have "TypedEqui.typed (tcfe \<Delta> tys) (Ag (fst \<sigma>'), \<tau>, \<omega>a')"
@@ -860,9 +860,9 @@ proof (induct n arbitrary: C1 C2 \<omega>1 \<omega>2 \<omega> s)
         show "well_typed_cmd tys {A1} C1 {B1} || {A2} C2' {B2}"
           using Suc.prems(9) asm1 asm2(1) well_typed_cmd_red by blast
       qed (simp_all add: Suc disjoint_def ra(3))
-      ultimately show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (Q1 \<otimes> Q2)"
+      ultimately show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (Q1 \<otimes> Q2)"
         using \<open>Some \<omega>a' = \<omega>' \<oplus> \<omega>f\<close> ra(1)
-        using Suc.prems(6) \<open>Some \<omega>' = \<omega>a \<oplus> \<omega>1\<close> \<open>sep_algebra_class.stable \<omega>a\<close> stable_sum
+        using Suc.prems(6) \<open>Some \<omega>' = \<omega>a \<oplus> \<omega>1\<close> \<open>weak_sep_algebra_class.stable \<omega>a\<close> stable_sum
         using asm2(1) by blast
     qed
   qed (simp)
@@ -882,7 +882,7 @@ proposition rule_par:
     shows "CSL (tcfe \<Delta> tys) (P1 \<otimes> P2) ({A1} C1 {B1} || {A2} C2 {B2}) (Q1 \<otimes> Q2)"
 proof (rule CSL_I)
   fix n s \<tau> \<omega>
-  assume asm0: "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)" "(Ag s, \<tau>, \<omega>) \<in> P1 \<otimes> P2" "sep_algebra_class.stable \<omega>"
+  assume asm0: "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)" "(Ag s, \<tau>, \<omega>) \<in> P1 \<otimes> P2" "weak_sep_algebra_class.stable \<omega>"
   then obtain p1 p2 where "Some \<omega> = p1 \<oplus> p2" "(Ag s, \<tau>, p1) \<in> P1" "(Ag s, \<tau>, p2) \<in> P2"
     by (meson sum_equi_states_easy_decompose)
   then have r: "Some \<omega> = stabilize p1 \<oplus> stabilize p2"
@@ -913,8 +913,8 @@ subsection \<open>Sequential composition\<close>
 
 lemma safe_seq:
   assumes "safe (tcfe \<Delta> tys) n C1 s \<tau> \<omega> Q"
-      and "\<And>m \<omega>' s'. m \<le> n \<and> (Ag s', \<tau>, \<omega>') \<in> Q \<and> sep_algebra_class.stable \<omega>' \<and> TypedEqui.typed (tcfe \<Delta> tys) (Ag s', \<tau>, \<omega>') \<Longrightarrow> safe (tcfe \<Delta> tys) m C2 s' \<tau> \<omega>' R"
-      and "sep_algebra_class.stable \<omega>"
+      and "\<And>m \<omega>' s'. m \<le> n \<and> (Ag s', \<tau>, \<omega>') \<in> Q \<and> weak_sep_algebra_class.stable \<omega>' \<and> TypedEqui.typed (tcfe \<Delta> tys) (Ag s', \<tau>, \<omega>') \<Longrightarrow> safe (tcfe \<Delta> tys) m C2 s' \<tau> \<omega>' R"
+      and "weak_sep_algebra_class.stable \<omega>"
       and "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)"
       and "well_typed_cmd tys (Cseq C1 C2)"
     shows "safe (tcfe \<Delta> tys) n (Cseq C1 C2) s \<tau> \<omega> R"
@@ -931,26 +931,26 @@ proof (induct n arbitrary: C1 \<omega> s)
       using safeE(4)[OF Suc.prems(1)] aborts_seq_elim
       by (meson no_aborts_def)
     fix \<omega>0' \<omega>f C' \<sigma>'
-    assume asm0: "sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'" "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>0')"
+    assume asm0: "weak_sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'" "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>0')"
     assume "\<langle>Cseq C1 C2, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
-    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 R"
+    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 R"
     proof (rule red_seq_cases)
       assume asm1: "C1 = Cskip" "C' = C2" "\<sigma>' = concretize s \<omega>0'"
       then have "safe (tcfe \<Delta> tys) (Suc n) C2 s \<tau> \<omega> R"
         using Suc.prems(2)[of "Suc n" _ \<omega>] safeE(1)[OF Suc.prems(1)] Suc.prems(3)
         using Suc.prems(4) by blast
-      then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 R"
+      then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 R"
         by (metis (no_types, lifting) Suc.prems(3) Suc_n_not_le_n asm0(2) asm0(3) asm1(2) asm1(3) fst_conv nat_le_linear safety_mono snd_conv)
     next
       fix C1' assume asm1: "C' = Cseq C1' C2" "\<langle>C1, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C1', \<sigma>'\<rangle>"
-      then obtain \<omega>1 \<omega>1' where "Some \<omega>1' = \<omega>1 \<oplus> \<omega>f" "sep_algebra_class.stable \<omega>1" "binary_mask \<omega>1'"
+      then obtain \<omega>1 \<omega>1' where "Some \<omega>1' = \<omega>1 \<oplus> \<omega>f" "weak_sep_algebra_class.stable \<omega>1" "binary_mask \<omega>1'"
         "snd \<sigma>' = get_vh \<omega>1'" "safe (tcfe \<Delta> tys) n C1' (fst \<sigma>') \<tau> \<omega>1 Q"
         using safeE(5)[OF Suc.prems(1), of \<omega>f \<omega>0' C1' \<sigma>'] asm0(1) asm0(2) asm0(3) asm0(4) by blast
       then have "safe (tcfe \<Delta> tys) n (Cseq C1' C2) (fst \<sigma>') \<tau> \<omega>1 R" using Suc(1)[OF \<open>safe (tcfe \<Delta> tys) n C1' (fst \<sigma>') \<tau> \<omega>1 Q\<close>]
         using typed_equi_red[OF Suc.prems(4)]
         by (smt (verit, ccfv_SIG) Suc.prems(2) Suc.prems(5) \<open>TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>0')\<close> \<open>\<langle>Cseq C1 C2, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>\<close> asm0(1) asm1(1) greater_def le_SucI stable_sum typed_equi_red typed_smaller_state well_typed_cmd_red)
-      then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 R"
-        using \<open>Some \<omega>1' = \<omega>1 \<oplus> \<omega>f\<close> \<open>binary_mask \<omega>1'\<close> \<open>sep_algebra_class.stable \<omega>1\<close> \<open>snd \<sigma>' = get_vh \<omega>1'\<close> asm1(1) by blast
+      then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 R"
+        using \<open>Some \<omega>1' = \<omega>1 \<oplus> \<omega>f\<close> \<open>binary_mask \<omega>1'\<close> \<open>weak_sep_algebra_class.stable \<omega>1\<close> \<open>snd \<sigma>' = get_vh \<omega>1'\<close> asm1(1) by blast
     qed
   qed (simp)
 qed (simp)
@@ -963,12 +963,12 @@ proposition rule_seq:
     shows "CSL (tcfe \<Delta> tys) P (Cseq C1 C2) R"
 proof (rule CSL_I)
   fix n s \<tau> \<omega>
-  assume asm0: "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)" "(Ag s, \<tau>, \<omega>) \<in> P" "sep_algebra_class.stable \<omega>"
+  assume asm0: "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)" "(Ag s, \<tau>, \<omega>) \<in> P" "weak_sep_algebra_class.stable \<omega>"
   show "safe (tcfe \<Delta> tys) n (Cseq C1 C2) s \<tau> \<omega> R"
   proof (rule safe_seq[of _ _ n C1 s \<tau> \<omega> Q C2 R])
     show "safe (tcfe \<Delta> tys) n C1 s \<tau> \<omega> Q"
       using CSL_E asm0(1) asm0(2) asm0(3) assms(1) by blast
-    show "\<And>m \<omega>' s'. m \<le> n \<and> (Ag s', \<tau>, \<omega>') \<in> Q \<and> sep_algebra_class.stable \<omega>' \<and> TypedEqui.typed (tcfe \<Delta> tys) (Ag s', \<tau>, \<omega>') \<Longrightarrow> safe (tcfe \<Delta> tys) m C2 s' \<tau> \<omega>' R"
+    show "\<And>m \<omega>' s'. m \<le> n \<and> (Ag s', \<tau>, \<omega>') \<in> Q \<and> weak_sep_algebra_class.stable \<omega>' \<and> TypedEqui.typed (tcfe \<Delta> tys) (Ag s', \<tau>, \<omega>') \<Longrightarrow> safe (tcfe \<Delta> tys) m C2 s' \<tau> \<omega>' R"
       using CSL_E[OF assms(2)] by blast
     show "well_typed_cmd tys (Cseq C1 C2)"
       using assms(3) by blast
@@ -997,9 +997,9 @@ proof (induct n arbitrary: C \<omega> s)
     show "no_aborts (tcfe \<Delta> tys) C s \<tau> \<omega>"
       using Suc.prems(1) safe.simps(2) by blast
     fix \<omega>0' \<omega>f C' \<sigma>'
-    assume asm0: "sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
+    assume asm0: "weak_sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
       "\<langle>C, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>" "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>0')"
-    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 Q'"
+    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 Q'"
       using safeE(5)[OF Suc.prems(1)] by (meson Suc.hyps assms(2))
   qed
 qed (simp)
@@ -1010,7 +1010,7 @@ proposition rule_conseq:
       and "Q \<subseteq> Q'"
     shows "CSL (tcfe \<Delta> tys) P' C Q'"
 proof (rule CSL_I)
-  show "\<And>n s \<tau> \<omega>. TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>) \<Longrightarrow> (Ag s, \<tau>, \<omega>) \<in> P' \<Longrightarrow> sep_algebra_class.stable \<omega> \<Longrightarrow> safe (tcfe \<Delta> tys) (Suc n) C s \<tau> \<omega> Q'"
+  show "\<And>n s \<tau> \<omega>. TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>) \<Longrightarrow> (Ag s, \<tau>, \<omega>) \<in> P' \<Longrightarrow> weak_sep_algebra_class.stable \<omega> \<Longrightarrow> safe (tcfe \<Delta> tys) (Suc n) C s \<tau> \<omega> Q'"
     using CSL_E assms(1) assms(2) assms(3) safe_conseq by blast
 qed
 
@@ -1036,9 +1036,9 @@ proof (induct n arbitrary: C \<omega> s)
     show "no_aborts (tcfe \<Delta> tys) C s \<tau> \<omega>"
       using Suc.prems(1) safe.simps(2) by blast
     fix \<omega>0' \<omega>f C' \<sigma>'
-    assume asm0: "sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
+    assume asm0: "weak_sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
       "\<langle>C, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>" "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>0')"
-    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 Q'"
+    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 Q'"
       using safeE(5)[OF Suc.prems(1), of \<omega>f \<omega>0' C' \<sigma>']
       by (smt (verit, ccfv_SIG) Suc.hyps Suc.prems(4) assms(2) greater_def stable_sum typed_equi_red typed_smaller_state well_typed_cmd_red)      
   qed
@@ -1052,7 +1052,7 @@ proposition rule_conseq_typed:
       and "well_typed_cmd tys C"
     shows "CSL (tcfe \<Delta> tys) P' C Q'"
 proof (rule CSL_I)
-  show "\<And>n s \<tau> \<omega>. TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>) \<Longrightarrow> (Ag s, \<tau>, \<omega>) \<in> P' \<Longrightarrow> sep_algebra_class.stable \<omega> \<Longrightarrow> safe (tcfe \<Delta> tys) (Suc n) C s \<tau> \<omega> Q'"
+  show "\<And>n s \<tau> \<omega>. TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>) \<Longrightarrow> (Ag s, \<tau>, \<omega>) \<in> P' \<Longrightarrow> weak_sep_algebra_class.stable \<omega> \<Longrightarrow> safe (tcfe \<Delta> tys) (Suc n) C s \<tau> \<omega> Q'"
     using CSL_E assms(1) assms(2) assms(3) assms(4) safe_conseq_typed unfolding ConcreteSemantics.entails_typed_def by metis
 qed
 
@@ -1081,22 +1081,22 @@ proposition rule_if:
     shows "CSL (tcfe \<Delta> tys) P (Cif b C1 C2) Q"
 proof (rule CSL_I)
   fix n s \<tau> \<omega>
-  assume asm0: "(Ag s, \<tau>, \<omega>) \<in> P" "sep_algebra_class.stable \<omega>" "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)"
+  assume asm0: "(Ag s, \<tau>, \<omega>) \<in> P" "weak_sep_algebra_class.stable \<omega>" "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)"
   show "safe (tcfe \<Delta> tys) (Suc n) (Cif b C1 C2) s \<tau> \<omega> Q"
   proof (rule safeI)
     show "no_aborts (tcfe \<Delta> tys) (Cif b C1 C2) s \<tau> \<omega>"
       using aborts.cases cmd.distinct(45) cmd.distinct(57) cmd.distinct(85) cmd.simps(91) no_aborts_def by blast
     fix \<omega>0' \<omega>f C' \<sigma>'
-    assume asm1: "sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'" "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>0')"
+    assume asm1: "weak_sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'" "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>0')"
     assume "\<langle>Cif b C1 C2, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
-    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 Q"
+    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 Q"
     proof (rule red_if_cases)
       assume asm2: "C' = C1" "\<sigma>' = concretize s \<omega>0'" "bdenot b (fst (concretize s \<omega>0'))"
       then have "(Ag s, \<tau>, \<omega>) \<in> P \<inter> assertify_bexp b"
         by (simp add: asm0(1) asm1(2) full_add_charact(1) in_assertify_bexp_alt)
       then have "safe (tcfe \<Delta> tys) n C' s \<tau> \<omega> Q"
         using CSL_E[OF assms(1), of s \<tau> \<omega> n] asm0 asm2 by blast
-      then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 Q"
+      then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 Q"
         using asm0 asm1 asm2 by auto
     next
       assume asm2: "C' = C2" "\<sigma>' = concretize s \<omega>0'" "\<not> bdenot b (fst (concretize s \<omega>0'))"
@@ -1104,7 +1104,7 @@ proof (rule CSL_I)
         by (simp add: asm0(1) asm1(2) full_add_charact(1) in_assertify_bexp_alt)
       then have "safe (tcfe \<Delta> tys) n C' s \<tau> \<omega> Q"
         using CSL_E[OF assms(2), of s \<tau> \<omega> n] asm0 asm2 by blast
-      then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 Q"
+      then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 Q"
         using asm0 asm1 asm2 by auto
     qed
   qed (simp_all)
@@ -1117,7 +1117,7 @@ subsection \<open>While loops\<close>
 lemma safe_while:
   assumes "CSL (tcfe \<Delta> tys) (I \<inter> (assertify_bexp b)) C I"
       and "(Ag s, \<tau>, \<omega>) \<in> I"
-      and "sep_algebra_class.stable \<omega>"
+      and "weak_sep_algebra_class.stable \<omega>"
       and "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)"
       and "well_typed_cmd tys (Cwhile b I' C)"
     shows "safe (tcfe \<Delta> tys) n (Cwhile b I' C) s \<tau> \<omega> (I \<inter> (assertify_bexp (Bnot b)))"
@@ -1130,9 +1130,9 @@ proof (induct n arbitrary: \<omega> s)
     show "no_aborts (tcfe \<Delta> tys) (Cwhile b I' C) s \<tau> \<omega>"
       using aborts_while_elim no_aborts_def by blast
     fix \<omega>0' \<omega>f C' \<sigma>'
-    assume asm0: "sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'" "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>0')"
+    assume asm0: "weak_sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'" "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>0')"
     assume "\<langle>Cwhile b I' C, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
-    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (I \<inter> assertify_bexp (Bnot b))"
+    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (I \<inter> assertify_bexp (Bnot b))"
     proof (rule red_while_cases)
       assume asm1: "C' = Cif b (Cseq C (Cwhile b I' C)) Cskip" "\<sigma>' = concretize s \<omega>0'"
       have "safe (tcfe \<Delta> tys) n C' s \<tau> \<omega> (I \<inter> assertify_bexp (Bnot b))"
@@ -1144,13 +1144,13 @@ proof (induct n arbitrary: \<omega> s)
           show "no_aborts (tcfe \<Delta> tys) C' s \<tau> \<omega>"
             using asm1(1) by blast
           fix \<omega>0' \<omega>f C'' \<sigma>'
-          assume asm2: "sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
+          assume asm2: "weak_sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
           assume "\<langle>C', concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C'', \<sigma>'\<rangle>"
-          then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) m C'' (fst \<sigma>') \<tau> \<omega>1 (I \<inter> assertify_bexp (Bnot b))"
+          then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) m C'' (fst \<sigma>') \<tau> \<omega>1 (I \<inter> assertify_bexp (Bnot b))"
             unfolding asm1(1)
           proof (rule red_if_cases)
             show "C'' = Cskip \<Longrightarrow> \<sigma>' = concretize s \<omega>0' \<Longrightarrow> \<not> bdenot b (fst (concretize s \<omega>0')) \<Longrightarrow>
-    \<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) m C'' (fst \<sigma>') \<tau> \<omega>1 (I \<inter> assertify_bexp (Bnot b))"
+    \<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) m C'' (fst \<sigma>') \<tau> \<omega>1 (I \<inter> assertify_bexp (Bnot b))"
               by (metis IntI SucOuter(3) SucOuter(4) asm2(2) asm2(3) bdenot.simps(3) fst_conv in_assertify_bexp_alt safe_skip snd_conv)
             assume asm3: "C'' = Cseq C (Cwhile b I' C)" "\<sigma>' = concretize s \<omega>0'" "bdenot b (fst (concretize s \<omega>0'))"
             have "safe (tcfe \<Delta> tys) m C'' s \<tau> \<omega> (I \<inter> assertify_bexp (Bnot b))"
@@ -1158,18 +1158,18 @@ proof (induct n arbitrary: \<omega> s)
             proof (rule safe_seq)
               show "safe (tcfe \<Delta> tys) m C s \<tau> \<omega> I"
                 by (metis CSL_E IntI SucOuter(3) SucOuter(4) SucOuter(5) asm3(3) assms(1) fst_conv in_assertify_bexp_alt)
-              show "\<And>ma \<omega>' s'. ma \<le> m \<and> (Ag s', \<tau>, \<omega>') \<in> I \<and> sep_algebra_class.stable \<omega>' \<and> TypedEqui.typed (tcfe \<Delta> tys) (Ag s', \<tau>, \<omega>') \<Longrightarrow> safe (tcfe \<Delta> tys) ma (Cwhile b I' C) s' \<tau> \<omega>' (I \<inter> assertify_bexp (Bnot b))"
+              show "\<And>ma \<omega>' s'. ma \<le> m \<and> (Ag s', \<tau>, \<omega>') \<in> I \<and> weak_sep_algebra_class.stable \<omega>' \<and> TypedEqui.typed (tcfe \<Delta> tys) (Ag s', \<tau>, \<omega>') \<Longrightarrow> safe (tcfe \<Delta> tys) ma (Cwhile b I' C) s' \<tau> \<omega>' (I \<inter> assertify_bexp (Bnot b))"
                 using Suc Suc.hyps[OF assms(1)] le_SucI safety_mono
                 by (meson assms(5))
               show "well_typed_cmd tys (Cseq C (Cwhile b I' C))"
                 using SucOuter(6) by auto
-            qed (simp_all add: \<open>sep_algebra_class.stable \<omega>\<close> SucOuter(5))
-            then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) m C'' (fst \<sigma>') \<tau> \<omega>1 (I \<inter> assertify_bexp (Bnot b))"
+            qed (simp_all add: \<open>weak_sep_algebra_class.stable \<omega>\<close> SucOuter(5))
+            then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) m C'' (fst \<sigma>') \<tau> \<omega>1 (I \<inter> assertify_bexp (Bnot b))"
               using SucOuter(4) asm2(2) asm2(3) asm3(2) by auto
           qed
         qed (simp_all add: asm1(1))
       qed (simp)
-      then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (I \<inter> assertify_bexp (Bnot b))"
+      then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (I \<inter> assertify_bexp (Bnot b))"
         using asm0 Suc.prems(3) asm1(2) by auto
     qed
   qed (simp_all)
@@ -1182,7 +1182,7 @@ proposition rule_while:
     shows "CSL (tcfe \<Delta> tys) I (Cwhile b I' C) (I \<inter> (assertify_bexp (Bnot b)))"
 proof (rule CSL_I)
   fix n s \<tau> \<omega>
-  assume "(Ag s, \<tau>, \<omega>) \<in> I" "sep_algebra_class.stable \<omega>" "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)"
+  assume "(Ag s, \<tau>, \<omega>) \<in> I" "weak_sep_algebra_class.stable \<omega>" "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)"
   then show "safe (tcfe \<Delta> tys) (Suc n) (Cwhile b I' C) s \<tau> \<omega> (I \<inter> assertify_bexp (Bnot b))"
     using assms(1) safe_while assms(2) by blast
 qed
@@ -1197,7 +1197,7 @@ abbreviation update_heap_val where
 
 lemma write_helper:
   assumes "Some \<omega>' = \<omega> \<oplus> \<omega>f"
-      and "sep_algebra_class.stable \<omega>f"
+      and "weak_sep_algebra_class.stable \<omega>f"
       and "get_vm \<omega> l = 1"
     shows "Some (set_value \<omega>' l v) = set_value \<omega> l v \<oplus> \<omega>f"
 proof -
@@ -1275,9 +1275,9 @@ lemma in_read_dom_write_dom:
   by (simp add: assms write_dom_def)
 
 lemma stable_before_then_update_stable:
-  assumes "sep_algebra_class.stable \<omega>"
+  assumes "weak_sep_algebra_class.stable \<omega>"
       and "get_vh \<omega> l \<noteq> None"
-  shows "sep_algebra_class.stable (set_value \<omega> l v)"
+  shows "weak_sep_algebra_class.stable (set_value \<omega> l v)"
   by (metis assms(1) assms(2) fun_upd_apply get_vh_vm_set_value(1) get_vh_vm_set_value(2) stable_virtual_state_def)
 
 
@@ -1296,7 +1296,7 @@ qed
 proposition rule_write:
   "CSL (tcfe \<Delta> tys) (full_ownership r) (Cwrite r e) (full_ownership_with_val r e)"
 proof (rule CSL_I)
-  fix n s \<tau> \<omega> assume "(Ag s, \<tau>, \<omega>) \<in> full_ownership r" "sep_algebra_class.stable \<omega>" "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)"
+  fix n s \<tau> \<omega> assume "(Ag s, \<tau>, \<omega>) \<in> full_ownership r" "weak_sep_algebra_class.stable \<omega>" "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)"
   then obtain l v where asm0: "s r = Some (VRef (Address l))" "\<omega> = acc_virt (l, field_val) (Abs_preal 1) (VInt v)"
     unfolding full_ownership_def by fastforce
   then have "get_vm \<omega> (l, field_val) = 1"
@@ -1316,7 +1316,7 @@ proof (rule CSL_I)
         by (simp add: \<open>get_vm \<omega> (l, field_val) = 1\<close> asm0(1) in_read_dom_write_dom(2))
 
       fix \<omega>0' \<omega>f
-      assume asm1: "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'" "sep_algebra_class.stable \<omega>f"
+      assume asm1: "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'" "weak_sep_algebra_class.stable \<omega>f"
       then have "s r = Some (VRef (Address l)) \<and> get_vm \<omega>0' (l, field_val) = 1"
         by (metis EquiViper.add_masks_def \<open>get_vm \<omega> (l, field_val) = 1\<close> asm0(1) binary_mask_def get_vm_additive padd_pos)
 
@@ -1330,7 +1330,7 @@ proof (rule CSL_I)
           using \<open>get_vh \<omega>0' (l, field_val) \<noteq> None\<close> asm0 by auto
       qed
       fix C' \<sigma>'
-      assume asm2: "sep_algebra_class.stable \<omega>f" "\<langle>Cwrite r e, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
+      assume asm2: "weak_sep_algebra_class.stable \<omega>f" "\<langle>Cwrite r e, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
       let ?v = "VInt (edenot e s)"
 
       have "Some (set_value \<omega>0' (l, field_val) ?v) = set_value \<omega> (l, field_val) ?v \<oplus> \<omega>f"
@@ -1348,8 +1348,8 @@ proof (rule CSL_I)
             by (simp add: acc_virt_set_value asm0(2))
         qed
       qed
-      ultimately show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) m C' (fst \<sigma>') \<tau> \<omega>1 (full_ownership_with_val r e)"        
-        by (metis \<open>get_vm \<omega> (l, field_val) = 1\<close> \<open>sep_algebra_class.stable \<omega>\<close> asm1(2) binary_mask_def fst_conv get_vh_vm_set_value(2) not_gr_0 one_neq_zero snd_conv stable_before_then_update_stable vstate_wf_imp)
+      ultimately show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) m C' (fst \<sigma>') \<tau> \<omega>1 (full_ownership_with_val r e)"        
+        by (metis \<open>get_vm \<omega> (l, field_val) = 1\<close> \<open>weak_sep_algebra_class.stable \<omega>\<close> asm1(2) binary_mask_def fst_conv get_vh_vm_set_value(2) not_gr_0 one_neq_zero snd_conv stable_before_then_update_stable vstate_wf_imp)
     qed (simp)
     ultimately show ?thesis by blast
   qed (simp)
@@ -1367,15 +1367,15 @@ proposition rule_assign:
   "CSL (tcfe \<Delta> tys) (sub_pre x e P) (Cassign x e) P"
 proof (rule CSL_I)
   fix n s \<tau> \<omega>
-  assume asm0: "(Ag s, \<tau>, \<omega>) \<in> sub_pre x e P" "sep_algebra_class.stable \<omega>"
+  assume asm0: "(Ag s, \<tau>, \<omega>) \<in> sub_pre x e P" "weak_sep_algebra_class.stable \<omega>"
   then have r: "(Ag (s(x \<mapsto> VInt (edenot e s))), \<tau>, \<omega>) \<in> P"
     by (simp add: sub_pre_def)
   show "safe (tcfe \<Delta> tys) (Suc n) (Cassign x e) s \<tau> \<omega> P"
   proof (rule safeI)
     fix \<omega>0' \<omega>f C' \<sigma>'
-    assume asm1: "sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
+    assume asm1: "weak_sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
     assume "\<langle>Cassign x e, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
-    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 P"
+    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 P"
       by (metis asm0(2) asm1(2) asm1(3) fst_eqD r red_assign_cases safe_skip snd_eqD)
   qed (auto simp add: no_aborts_def)
 qed
@@ -1489,15 +1489,15 @@ proof (rule CSL_I)
   fix s :: "'a stack"
   fix \<tau> :: "'a ag_trace"
   fix \<omega> :: "'a virtual_state"
-  assume asm: "sep_algebra_class.stable \<omega>" "(Ag s, \<tau>, \<omega>) \<in> emp"
+  assume asm: "weak_sep_algebra_class.stable \<omega>" "(Ag s, \<tau>, \<omega>) \<in> emp"
 
 
   show "safe (tcfe \<Delta> tys) (Suc n) (Calloc r e) s \<tau> \<omega> (full_ownership_with_val r e)"
   proof (rule safeI)
     fix \<omega>0' \<omega>f C' \<sigma>'
-    assume asm0: "sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
+    assume asm0: "weak_sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
     assume "\<langle>Calloc r e, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
-    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (full_ownership_with_val r e)"
+    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (full_ownership_with_val r e)"
     proof (rule red_alloc_cases)
       fix sa h l
       assume asm1: "concretize s \<omega>0' = (sa, h)" "C' = Cskip" "(l, field_val) \<notin> dom h"
@@ -1505,12 +1505,12 @@ proof (rule CSL_I)
       then have r: "Some (set_perm_and_value \<omega>0' (l, field_val) 1 (Some (VInt (edenot e s))))
   = set_perm_and_value \<omega> (l, field_val) 1 (Some (VInt (edenot e s))) \<oplus> \<omega>f"
         using alloc_helper
-        by (smt (verit, ccfv_threshold) EquiSemAuxLemma.gr_0_is_ppos EquiViper.add_masks_def Pair_inject \<open>sep_algebra_class.stable \<omega>\<close> asm0(1) asm0(2) asm0(3) binary_mask_and_stable_then_mk_virtual comm_monoid_add_class.add_0 leI mk_virtual_state_simps(1) option.discI order_less_imp_le padd_pos pperm_pgt_pnone stable_sum stable_virtual_state_def vstate_add_iff)
+        by (smt (verit, ccfv_threshold) EquiSemAuxLemma.gr_0_is_ppos EquiViper.add_masks_def Pair_inject \<open>weak_sep_algebra_class.stable \<omega>\<close> asm0(1) asm0(2) asm0(3) binary_mask_and_stable_then_mk_virtual comm_monoid_add_class.add_0 leI mk_virtual_state_simps(1) option.discI order_less_imp_le padd_pos pperm_pgt_pnone stable_sum stable_virtual_state_def vstate_add_iff)
       let ?\<omega>1 = "set_perm_and_value \<omega> (l, field_val) 1 (Some (VInt (edenot e s)))"
       let ?\<omega>1' = "set_perm_and_value \<omega>0' (l, field_val) 1 (Some (VInt (edenot e s)))"
 
-      have "sep_algebra_class.stable ?\<omega>1"
-        by (simp add: \<open>sep_algebra_class.stable \<omega>\<close> pperm_pnone_pgt stable_set_perm_and_value)
+      have "weak_sep_algebra_class.stable ?\<omega>1"
+        by (simp add: \<open>weak_sep_algebra_class.stable \<omega>\<close> pperm_pnone_pgt stable_set_perm_and_value)
       moreover have "binary_mask ?\<omega>1'"
       proof (rule binary_maskI)
         fix la show "get_vm (set_perm_and_value \<omega>0' (l, field_val) PosReal.pwrite (Some (VInt (edenot e s)))) la = PosReal.pnone \<or>
@@ -1529,7 +1529,7 @@ proof (rule CSL_I)
           using in_emp_set_perm_value_acc_virt[of \<omega> 1 "(l, field_val)" "VInt (edenot e s)"] in_emp_smaller[OF asm(2)]
           using one_preal.abs_eq preal_not_0_gt_0 by force
       qed
-      ultimately show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (full_ownership_with_val r e)"
+      ultimately show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (full_ownership_with_val r e)"
         using r asm1(2)
         by (metis safe_skip snd_conv)
     qed
@@ -1556,7 +1556,7 @@ qed
 
 lemma free_helper:
   assumes "Some \<omega>' = \<omega> \<oplus> \<omega>f"
-      and "sep_algebra_class.stable \<omega>f"
+      and "weak_sep_algebra_class.stable \<omega>f"
       and "get_vm \<omega> hl = 1"
     shows "Some (erase_perm_and_value \<omega>' hl) = erase_perm_and_value \<omega> hl \<oplus> \<omega>f"
 proof -
@@ -1578,8 +1578,8 @@ proof -
 qed
 
 lemma stable_erase_perm_value:
-  assumes "sep_algebra_class.stable \<omega>"
-  shows "sep_algebra_class.stable (erase_perm_and_value \<omega> hl)"
+  assumes "weak_sep_algebra_class.stable \<omega>"
+  shows "weak_sep_algebra_class.stable (erase_perm_and_value \<omega> hl)"
   by (metis all_pos assms erase_perm_and_value_def linorder_not_le set_perm_and_value_def stable_set_perm_and_value)
 
 lemma binary_mask_erase_perm_value:
@@ -1591,7 +1591,7 @@ proposition rule_free:
   "CSL (tcfe \<Delta> tys) (full_ownership r) (Cfree r) UNIV"
 proof (rule CSL_I)
   fix n s \<tau> \<omega>
-  assume asm0: "(Ag s, \<tau>, \<omega>) \<in> full_ownership r" "sep_algebra_class.stable \<omega>" "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)"
+  assume asm0: "(Ag s, \<tau>, \<omega>) \<in> full_ownership r" "weak_sep_algebra_class.stable \<omega>" "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)"
   then obtain l v where r0: "s r = Some (VRef (Address l))" "\<omega> = acc_virt (l, field_val) (Abs_preal 1) (VInt v)"
     unfolding full_ownership_def by fastforce
   then have r: "get_vm \<omega> (l, field_val) = 1"
@@ -1603,7 +1603,7 @@ proof (rule CSL_I)
     show "writes (Cfree r) s \<subseteq> write_dom \<omega>"
       by (simp add: in_read_dom_write_dom(2) r r0(1))
     fix \<omega>0' \<omega>f
-    assume asm1: "sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
+    assume asm1: "weak_sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
     show "aborts (Cfree r) (concretize s \<omega>0') \<Longrightarrow> False"
     proof -
       assume "aborts (Cfree r) (concretize s \<omega>0')"
@@ -1623,7 +1623,7 @@ proof (rule CSL_I)
     qed
     fix C' \<sigma>'
     assume "\<langle>Cfree r, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
-    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (UNIV)"
+    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (UNIV)"
     proof (rule red_free_cases)
       fix sa h l'
       assume asm2: "concretize s \<omega>0' = (sa, h)" "C' = Cskip" "\<sigma>' = (sa, h((l', field_val) := None))"
@@ -1646,12 +1646,12 @@ proof (rule CSL_I)
       qed
       then have "snd \<sigma>' = get_vh ?\<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> ?\<omega>1 (UNIV)"
         using asm2(1) asm2(2) asm2(3) by auto
-      moreover have "Some ?\<omega>1' = ?\<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable ?\<omega>1"
+      moreover have "Some ?\<omega>1' = ?\<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable ?\<omega>1"
         using asm0(2) asm1(1) asm1(2) asm2(1) asm2(4) free_helper r r0(1) stable_erase_perm_value by fastforce
       moreover have "binary_mask ?\<omega>1'"
         by (simp add: asm1(3) binary_mask_erase_perm_value)        
       ultimately show
-        "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (UNIV)"
+        "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (UNIV)"
         by blast
     qed
   qed (simp_all)
@@ -1724,7 +1724,7 @@ proposition rule_read:
     shows "CSL (tcfe \<Delta> tys) A (Cread x r) (read_result A x r)"
 proof (rule CSL_I)
   fix n s \<tau> \<omega>
-  assume asm0: "(Ag s, \<tau>, \<omega>) \<in> A" "sep_algebra_class.stable \<omega>"
+  assume asm0: "(Ag s, \<tau>, \<omega>) \<in> A" "weak_sep_algebra_class.stable \<omega>"
   then obtain l v where lv_def: "s r = Some (VRef (Address l))" "get_vm \<omega> (l, field_val) > 0" "get_vh \<omega> (l, field_val) = Some v"
     using assms(1) unfolding read_perm_def by force
   show "safe (tcfe \<Delta> tys) (Suc n) (Cread x r) s \<tau> \<omega> (read_result A x r)"
@@ -1732,7 +1732,7 @@ proof (rule CSL_I)
     show "accesses (Cread x r) s \<subseteq> read_dom \<omega>"
       by (simp add: lv_def(1) lv_def(2) read_dom_def)
     fix \<omega>0' \<omega>f
-    assume asm1: "sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
+    assume asm1: "weak_sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
     then have "get_vh \<omega>0' (l, field_val) = Some v"
       using lv_def(3) read_helper by blast
     then show "aborts (Cread x r) (concretize s \<omega>0') \<Longrightarrow> False"
@@ -1740,7 +1740,7 @@ proof (rule CSL_I)
 
     fix C' \<sigma>'
     assume "\<langle>Cread x r, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
-    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (read_result A x r)"
+    then show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (read_result A x r)"
     proof (rule red_read_cases)
       fix sa h l' v'
       assume asm2: "concretize s \<omega>0' = (sa, h)" "C' = Cskip" "\<sigma>' = (sa(x \<mapsto> VInt v'), h)" "sa r = Some (VRef (Address l'))"
@@ -1750,7 +1750,7 @@ proof (rule CSL_I)
       moreover have "(Ag (s(x := Some v)), \<tau>, \<omega>) \<in> read_result A x r"
         unfolding read_result_def TypedEqui.assign_var_state_def
         using asm0(1) lv_def(1) lv_def(3) by force
-      ultimately show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1'
+      ultimately show "\<exists>\<omega>1 \<omega>1'. Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1'
         \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (read_result A x r)"
         using asm0(2) asm1(2) asm1(3) asm2(1) asm2(2) asm2(3) by auto
     qed
@@ -1778,10 +1778,10 @@ proof (induct n arbitrary: C s \<omega>)
     using Suc.prems(1) safeE(4) apply blast
   proof -
     fix \<omega>0' \<omega>f C' \<sigma>'
-    assume asm0: "sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
+    assume asm0: "weak_sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
        "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>0')" "\<langle>C, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
     then obtain \<omega>1 \<omega>1' where
-       r: "Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1'" "safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 A"
+       r: "Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1'" "safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 A"
       using Suc.prems(1) safeE(5) by blast
     have "safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (Stabilize A)"
       using r(2)
@@ -1794,13 +1794,13 @@ proof (induct n arbitrary: C s \<omega>)
         show "well_typed (custom_context (tcfe \<Delta> tys)) (get_abs_state (Ag (fst \<sigma>'), \<tau>, \<omega>1))"
           by (meson Suc.prems(4) TypedEqui.typed_def asm0(1) asm0(4) asm0(5) greater_def r(1) stable_sum typed_equi_red typed_smaller_state)
       qed
-      show "sep_algebra_class.stable (Ag (fst \<sigma>'), \<tau>, \<omega>1)"
+      show "weak_sep_algebra_class.stable (Ag (fst \<sigma>'), \<tau>, \<omega>1)"
         using r(1) stable_get_state by fastforce
       show "well_typed_cmd tys C'"
         by (metis Suc.prems(4) asm0(5) well_typed_cmd_red)
     qed
     then show "\<exists>\<omega>1 \<omega>1'.
-          Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (Stabilize A)"
+          Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (Stabilize A)"
       using r by blast
   qed
 qed (simp)
@@ -1830,10 +1830,10 @@ proof (induct n arbitrary: C s \<omega>)
     using Suc.prems(1) safeE(4) apply blast
   proof -
     fix \<omega>0' \<omega>f C' \<sigma>'
-    assume asm0: "sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
+    assume asm0: "weak_sep_algebra_class.stable \<omega>f" "Some \<omega>0' = \<omega> \<oplus> \<omega>f" "binary_mask \<omega>0'"
        "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>0')" "\<langle>C, concretize s \<omega>0'\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
     then obtain \<omega>1 \<omega>1' where
-       r: "Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1'" "safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 A"
+       r: "Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1'" "safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 A"
       using Suc.prems(1) safeE(5) by blast
     have "safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (Set.filter (typed (tcfe \<Delta> tys) \<circ> stabilize) A)"
       using r(2)
@@ -1846,14 +1846,14 @@ proof (induct n arbitrary: C s \<omega>)
         show "well_typed (custom_context (tcfe \<Delta> tys)) (get_abs_state (Ag (fst \<sigma>'), \<tau>, \<omega>1))"
           by (meson Suc.prems(4) TypedEqui.typed_def asm0(1) asm0(4) asm0(5) greater_def r(1) stable_sum typed_equi_red typed_smaller_state)
       qed
-      show "sep_algebra_class.stable (Ag (fst \<sigma>'), \<tau>, \<omega>1)"
+      show "weak_sep_algebra_class.stable (Ag (fst \<sigma>'), \<tau>, \<omega>1)"
         using r(1) stable_get_state by fastforce
       show "well_typed_cmd tys C'"
         by (metis Suc.prems(4) asm0(5) well_typed_cmd_red)
     qed
     then show "\<exists>\<omega>1 \<omega>1'.
           Some \<omega>1' = \<omega>1 \<oplus> \<omega>f \<and>
-          sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (Set.filter (typed (tcfe \<Delta> tys) \<circ> stabilize) A)"
+          weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 (Set.filter (typed (tcfe \<Delta> tys) \<circ> stabilize) A)"
      using r by blast
   qed
 qed (simp)
@@ -1939,7 +1939,7 @@ qed
 
 
 lemma stable_uu:
-  "sep_algebra_class.stable uu"
+  "weak_sep_algebra_class.stable uu"
 proof (rule stable_virtual_stateI)
   show "\<And>hl. get_vh uu hl \<noteq> None \<Longrightarrow> PosReal.pnone < get_vm uu hl"
     by (simp add: empty_heap_def)
@@ -1961,9 +1961,9 @@ lemma safeE_no_frame:
       and "binary_mask \<omega>"
       and "\<langle>C, concretize s \<omega>\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
       and "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, \<omega>)"
-    shows "\<exists>\<omega>1. sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1 \<and> snd \<sigma>' = get_vh \<omega>1 \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 Q"
+    shows "\<exists>\<omega>1. weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1 \<and> snd \<sigma>' = get_vh \<omega>1 \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 Q"
 proof -
-  obtain \<omega>1 \<omega>1' where "Some \<omega>1' = \<omega>1 \<oplus> uu \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 Q"
+  obtain \<omega>1 \<omega>1' where "Some \<omega>1' = \<omega>1 \<oplus> uu \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1' \<and> snd \<sigma>' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 Q"
     using safeE(5)[OF assms(1), of uu \<omega> C' \<sigma>']
     using assms stable_uu uu_neutral by blast
   then show ?thesis
@@ -1976,7 +1976,7 @@ lemma safeE_no_frame_alt:
   assumes "safe (tcfe \<Delta> tys) (Suc n) C s \<tau> (mk_virtual_state h) Q"
       and "\<langle>C, (s, h)\<rangle> \<rightarrow> \<langle>C', \<sigma>'\<rangle>"
       and "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, \<tau>, (mk_virtual_state h))"
-    shows "\<exists>\<omega>1. sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1 \<and> snd \<sigma>' = get_vh \<omega>1 \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 Q"
+    shows "\<exists>\<omega>1. weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1 \<and> snd \<sigma>' = get_vh \<omega>1 \<and> safe (tcfe \<Delta> tys) n C' (fst \<sigma>') \<tau> \<omega>1 Q"
   by (metis assms mk_virtual_state_charact(2) mk_virtual_state_simps(2) safeE_no_frame)
 
 
@@ -1986,7 +1986,7 @@ lemma safe_n_steps:
       and "s = fst \<sigma>"
       and "get_vh \<omega> = snd \<sigma>"
       and "binary_mask \<omega>"
-      and "sep_algebra_class.stable \<omega>"       
+      and "weak_sep_algebra_class.stable \<omega>"       
       and "\<And>n. safe (tcfe \<Delta> tys) n C s (Ag Map.empty) \<omega> (assertify_state_exp Q)"
       and "TypedEqui.typed (tcfe \<Delta> tys) (Ag s, Ag Map.empty, \<omega>)"
       and "well_typed_cmd tys C"
@@ -2006,7 +2006,7 @@ next
   show "\<not> aborts C' \<sigma>' \<and> (C' = Cskip \<longrightarrow> Q \<sigma>')"
   proof (rule OneStep(3)[of "fst \<sigma>''" "mk_virtual_state (snd \<sigma>'')"])
     fix n
-    obtain \<omega>1 \<omega>1' where "Some \<omega>1' = \<omega>1 \<oplus> uu \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1'"
+    obtain \<omega>1 \<omega>1' where "Some \<omega>1' = \<omega>1 \<oplus> uu \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1'"
       "snd \<sigma>'' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C'' (fst \<sigma>'') (Ag Map.empty) \<omega>1 (assertify_state_exp Q)"
       using safeE(5)[OF OneStep(8)[of "Suc n"], of uu \<omega> C'' \<sigma>'']
       using OneStep.hyps(1) OneStep.prems(1) OneStep.prems(2) OneStep.prems(3) stable_uu uu_neutral
@@ -2015,7 +2015,7 @@ next
       by (metis binary_mask_and_stable_then_mk_virtual pure_def stable_and_sum_pure_same uu_neutral)
     show "TypedEqui.typed (tcfe \<Delta> tys) (Ag (fst \<sigma>''), Ag Map.empty, mk_virtual_state (snd \<sigma>''))"
       using OneStep.hyps(1) OneStep.prems(1) OneStep.prems(2) OneStep.prems(6) OneStep.prems(7) typed_equi_red
-      by (metis \<open>Some \<omega>1' = \<omega>1 \<oplus> uu \<and> sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1'\<close> \<open>snd \<sigma>'' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C'' (fst \<sigma>'') (Ag Map.empty) \<omega>1 (assertify_state_exp Q)\<close> binary_mask_and_stable_then_mk_virtual option.inject prod.collapse uu_neutral)
+      by (metis \<open>Some \<omega>1' = \<omega>1 \<oplus> uu \<and> weak_sep_algebra_class.stable \<omega>1 \<and> binary_mask \<omega>1'\<close> \<open>snd \<sigma>'' = get_vh \<omega>1' \<and> safe (tcfe \<Delta> tys) n C'' (fst \<sigma>'') (Ag Map.empty) \<omega>1 (assertify_state_exp Q)\<close> binary_mask_and_stable_then_mk_virtual option.inject prod.collapse uu_neutral)
     show "well_typed_cmd tys C''"
       by (metis OneStep.hyps(1) OneStep.prems(7) well_typed_cmd_red)
   qed (simp_all)
