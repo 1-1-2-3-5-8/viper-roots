@@ -4,7 +4,7 @@ text \<open>In this file, we define the type of positive rationals, which we use
 extended heaps (see FractionalHeap.thy).\<close>
 
 theory PosRat
-  imports Main HOL.Rat
+  imports Main HOL.Rat PosPerm
 begin
 
 typedef prat = "{ r :: rat |r. r \<ge> 0}" by fastforce
@@ -433,5 +433,40 @@ proof -
   qed
   then show ?thesis by auto
 qed
+
+instantiation prat :: pos_perm
+begin
+
+instance proof
+  fix x y a b p1 p2 q1 q2 :: prat
+  show "x < y \<Longrightarrow> \<exists>z > x. z < y"
+    by (transfer) (metis dense dual_order.trans less_eq_rat_def mem_Collect_eq)
+  show "a \<noteq> pnone \<Longrightarrow> pmult (pinv a) a = pwrite"
+    apply (cases a)
+    apply (cases b)
+    by (simp add: field_inverse)
+  show "pdiv a b = pmult a (pinv b)"
+    apply (cases a)
+    apply (cases b)
+    by (simp add: field_divide_inverse)
+  show "pinv pnone = pnone"
+    by (simp add: field_inverse_zero)
+  show "pnone \<le> a"
+    by (metis not_pgte_charact sum_larger nle_le prat_gte_padd prat_pnone_pgt)
+  show "p1 \<le> p2 \<and> q1 \<le> q2 \<Longrightarrow> padd p1 q1 \<le> padd p2 q2"
+    by (simp add: padd_mono)
+  show "p1 \<le> p2 \<Longrightarrow> \<exists>r. p2 = padd p1 r"
+    by (simp add: prat_gte_padd)
+  show "b \<le> a \<and> pnone < b \<Longrightarrow> pinv a \<le> pinv b"
+    apply (cases a)
+    apply (cases b)
+    by (metis pinv_inverts less_eq_prat.rep_eq less_prat.rep_eq pgte.rep_eq ppos.rep_eq zero_prat.rep_eq)    
+  show "pwrite < padd pwrite pwrite"
+    by (transfer) simp
+  show "\<And>a x b y. a = padd x b \<Longrightarrow> a = padd y b \<Longrightarrow> x = y"
+    by (transfer) simp
+qed
+
+end
 
 end
