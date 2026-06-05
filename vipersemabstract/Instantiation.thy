@@ -2,6 +2,9 @@ theory Instantiation
   imports AbstractSemanticsProperties EquiViper EquiSemAuxLemma
 begin
 
+definition make_semantic_heap_tc :: "('v, ('v virtual_state)) interp \<Rightarrow> (field_ident \<rightharpoonup> vtyp) \<Rightarrow> field_ident \<rightharpoonup> 'v sem_type" where
+  "make_semantic_heap_tc \<Delta> F f = map_option (sem_vtyp (domains \<Delta>)) (F f)"
+
 definition make_semantic_bexp :: "('a, ('a virtual_state)) interp \<Rightarrow> pure_exp \<Rightarrow> 'a equi_state bexp" where
   "make_semantic_bexp \<Delta> b \<omega> =
   (if \<Delta> \<turnstile> \<langle>b; \<omega>\<rangle> [\<Down>] Val (VBool True) then Some True
@@ -166,7 +169,7 @@ fun sat_set :: "('a, 'a virtual_state) ValueAndBasicState.interp \<Rightarrow> (
 | "(\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>CondAssert b A B\<rangle>) = (\<Union>v. (\<Delta> \<turnstile> \<langle>b\<rangle> [\<Down>] Val (VBool v)) \<otimes>
      (if v = True then (\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle>) else (\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>B\<rangle>)))"
 | "(\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>A && B\<rangle>) = ((\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle>) \<otimes> (\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>B\<rangle>))"
-| "(\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>A --* B\<rangle>) = ((\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle>) --\<otimes> (\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>B\<rangle>))"
+| "(\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>A --* B\<rangle>) = (Set.filter (\<lambda>\<omega>. heap_typed (make_semantic_heap_tc \<Delta> F) (get_h \<omega>)) (\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle>) --\<otimes> (\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>B\<rangle>) \<otimes> UNIV)"
 (* | "\<Delta> \<Turnstile> \<langle>ForAll ty A\<rangle> \<longleftrightarrow> (\<forall>v \<in> set_from_type (domains \<Delta>) ty. \<Delta> \<Turnstile> \<langle>A; shift_and_add_equi_state \<omega> v\<rangle>)" *)
 | "\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>Exists ty A\<rangle> = { \<omega>. \<exists>v \<in> set_from_type (domains \<Delta>) ty. shift_and_add_equi_state \<omega> v \<in> \<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle> }"
 | "(\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>ImpureAnd A B\<rangle>) = \<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle> \<inter> \<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>B\<rangle>"
