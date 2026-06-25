@@ -71,8 +71,10 @@ datatype 'p exp_or_wildcard = PureExp 'p | Wildcard
 datatype 'p atomic_assert =
   is_pure_atomic: Pure 'p
   | Acc 'p field_ident "'p exp_or_wildcard"
-  | AccPredicate predicate_ident "'p list" "'p exp_or_wildcard"
+
 (* AccPredicate "name of predicate" "arguments" "permission amount" *)
+  | AccPredicate predicate_ident "'p list" "'p exp_or_wildcard"
+
 
 datatype ('p, 'atm) assert =
   Atomic 'atm
@@ -89,6 +91,11 @@ datatype ('p, 'atm) assert =
 
   | is_forall: ForAll vtyp "('p, 'atm) assert"
   | Exists vtyp "('p, 'atm) assert"
+
+\<comment>\<open>Simplified inductive predicates for the front-end translation\<close>
+  | InductivePred "('p, 'atm) assert"
+  | PredSymbol
+  | LetA var 'p "('p, 'atm) assert"
 
 text \<open>Assertions \<^typ>\<open>('p, 'atm) assert\<close> are parametrized by the pure expressions \<^typ>\<open>'p\<close> as well as the
 atomic assertions \<^typ>\<open>'atm\<close> (assertions without impure connectives). Note that the atomic assertions usually include
@@ -110,6 +117,10 @@ fun is_pure :: "assertion \<Rightarrow> bool" where
 | "is_pure (ForAll _ A) \<longleftrightarrow> is_pure A"
 | "is_pure (Exists _ A) \<longleftrightarrow> is_pure A"
 | "is_pure (Wand _ _) \<longleftrightarrow> False"
+| "is_pure (InductivePred A) \<longleftrightarrow> is_pure A"
+| "is_pure (LetA _ _ A) \<longleftrightarrow> is_pure A"
+| "is_pure PredSymbol \<longleftrightarrow> False"
+
 
 (* currently missing:
 - x := new(_)

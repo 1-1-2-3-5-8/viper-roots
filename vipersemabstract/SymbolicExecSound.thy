@@ -652,8 +652,8 @@ lemma sproduce_sound :
   assumes "assertion_typing (fields_to_prog F) \<Lambda> A"
   assumes "s2a_state_wf \<Lambda> F V \<sigma>"
   assumes "stable \<omega>"
-  shows "Stable ({\<omega>} \<otimes> (\<langle>def_interp, F\<rangle> \<Turnstile> \<langle>A\<rangle>)) \<and>
-   (\<forall> \<omega>'. stable (\<omega>') \<longrightarrow> (\<omega>') \<in> {\<omega>} \<otimes> \<langle>def_interp, F\<rangle> \<Turnstile> \<langle>A\<rangle> \<longrightarrow>
+  shows "Stable ({\<omega>} \<otimes> (\<langle>{}, def_interp, F\<rangle> \<Turnstile> \<langle>A\<rangle>)) \<and>
+   (\<forall> \<omega>'. stable (\<omega>') \<longrightarrow> (\<omega>') \<in> {\<omega>} \<otimes> \<langle>{}, def_interp, F\<rangle> \<Turnstile> \<langle>A\<rangle> \<longrightarrow>
     (\<exists> V' \<sigma>'. \<omega>' \<succeq> s2a_state V' (sym_store \<sigma>') (sym_heap \<sigma>') \<and> s2a_state_wf \<Lambda> F V' \<sigma>' \<and> Q \<sigma>'))"
   using assms
 proof (induction A arbitrary: \<sigma> \<omega> V Q)
@@ -826,7 +826,7 @@ next
       apply (drule star_to_singleton_stableE; simp?)
       using Star.IH Star.prems(1) sproduce.simps(7) by blast
     done
-qed (simp add:sfail_def)+
+qed (simp_all add:sfail_def assertion_typing_simps)
 
 subsection \<open>sconsume sound\<close>
 
@@ -835,7 +835,7 @@ lemma sconsume_sound :
   assumes "\<omega> \<succeq> s2a_state V (sym_store \<sigma>) (sym_heap \<sigma>)"
   assumes "assertion_typing (fields_to_prog F) \<Lambda> A"
   assumes "s2a_state_wf \<Lambda> F V \<sigma>"
-  shows "\<exists> \<omega>' V' \<sigma>'. \<omega> \<in> {\<omega>'} \<otimes> \<langle>def_interp, F\<rangle> \<Turnstile> \<langle>A\<rangle> \<and> \<omega>' \<succeq> s2a_state V' (sym_store \<sigma>') (sym_heap \<sigma>') \<and>
+  shows "\<exists> \<omega>' V' \<sigma>'. \<omega> \<in> {\<omega>'} \<otimes> \<langle>\<Gamma>, def_interp, F\<rangle> \<Turnstile> \<langle>A\<rangle> \<and> \<omega>' \<succeq> s2a_state V' (sym_store \<sigma>') (sym_heap \<sigma>') \<and>
     s2a_state_wf \<Lambda> F V' \<sigma>' \<and> Q \<sigma>'"
   using assms
 proof (induction A arbitrary: \<sigma> \<omega> V Q)
@@ -1022,9 +1022,9 @@ next
     apply (drule (3) Star.IH(2))
     apply (clarsimp)
     apply (safe del:exI intro!:exI; assumption?)
-    apply (simp add:add_set_commm[of "\<langle>def_interp, F\<rangle> \<Turnstile> \<langle>A1\<rangle>"] add_set_asso[symmetric])
+    apply (simp add:add_set_commm[of "\<langle>\<Gamma>, def_interp, F\<rangle> \<Turnstile> \<langle>A1\<rangle>"] add_set_asso[symmetric])
     by (rule star_to_singletonI; assumption)
-qed (simp add:sfail_def)+
+qed (simp_all add:sfail_def assertion_typing_simps)
 
 subsection \<open>sexec sound\<close>
 
@@ -1039,6 +1039,14 @@ lemma add_perm_stabilize_del_perm_set_value :
   using get_vm_bound preal_to_real by (metis nle_le)
   subgoal  by (metis assms(4) stable_virtual_state_def)
   done
+
+lemma assertion_typing_independent_of_pred_interp:
+  assumes "assertion_typing F \<Lambda> A"
+  shows "\<langle>\<Gamma>, \<Delta>, FF\<rangle> \<Turnstile> \<langle>A\<rangle> = \<langle>\<Gamma>', \<Delta>, FF\<rangle> \<Turnstile> \<langle>A\<rangle>"
+  using assms
+  apply (induct rule: assertion_typing.induct)
+          apply simp_all
+  by presburger+
 
 theorem sexec_sound :
   assumes "\<omega> \<succeq> s2a_state V (sym_store \<sigma>) (sym_heap \<sigma>)"
@@ -1067,7 +1075,8 @@ next
       apply (clarsimp)
       apply (rule concrete_post_Exhale[where \<omega>'=\<omega>'])
         apply (solves \<open>simp\<close>)
-      subgoal  by (clarsimp simp add:make_semantic_assertion_def)
+      subgoal  using make_semantic_assertion_def assertion_typing_independent_of_pred_interp
+        by (metis snd_conv)
       apply (erule (2) sym_stabilize_soundE)
       by blast
     done

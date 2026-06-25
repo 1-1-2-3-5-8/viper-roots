@@ -241,6 +241,10 @@ inductive_simps assertion_typing_simps :
   "assertion_typing Pr \<Lambda> (ForAll ty A)"
   "assertion_typing Pr \<Lambda> (Exists ty A)"
 
+  "assertion_typing Pr \<Lambda> (LetA x e A)"
+  "assertion_typing Pr \<Lambda> (InductivePred A)"
+  "assertion_typing Pr \<Lambda> PredSymbol"
+
 inductive stmt_typing :: "program \<Rightarrow> type_context \<Rightarrow> stmt \<Rightarrow> bool"
   for Pr :: program
   where

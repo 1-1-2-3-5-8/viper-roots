@@ -224,6 +224,9 @@ fun valid_a2t_assert_no_rec :: "ViperLang.assertion \<Rightarrow> bool"
   | "valid_a2t_assert_no_rec (Wand _ _) = False"
   | "valid_a2t_assert_no_rec (ForAll _ _) = False"
   | "valid_a2t_assert_no_rec (Exists _ _) = False"
+  | "valid_a2t_assert_no_rec (LetA _ _ _) = False"
+  | "valid_a2t_assert_no_rec (PredSymbol) = False"
+  | "valid_a2t_assert_no_rec (InductivePred _) = False"
   | "valid_a2t_assert_no_rec _ = True"
 
 abbreviation valid_a2t_assert
@@ -612,6 +615,18 @@ next
   case (Star A1 A2)
   then show ?case
     apply (simp add:red_inhale_simps) by metis
+next
+  case PredSymbol
+  then show ?case
+    by (metis get_h_total_full.simps get_hh_total_full.simps inhale_only_changes_mask(3) prod.simps(1))
+next
+  case (InductivePred A)
+  then show ?case
+    by (metis get_h_total_full.simps get_hh_total_full.simps inhale_only_changes_mask(3) prod.simps(1))
+next
+  case (LetA x e A)
+  then show ?case
+    by (metis get_h_total_full.simps get_hh_total_full.simps inhale_only_changes_mask(3) prod.simps(1))
 qed (clarsimp simp add:red_inhale_simps; blast)+
 
 lemma red_inhale_preserves_typing :
@@ -648,6 +663,21 @@ next
   case (Star A1 A2)
   then show ?case
     apply (simp add:red_exhale_simps) by metis
+next
+  case PredSymbol
+  then show ?case
+    by (metis exhale_only_changes_total_state_aux get_h_total_full.simps
+        get_hh_total_full.simps prod.inject)
+next
+  case (InductivePred A)
+  then show ?case
+    by (metis exhale_only_changes_total_state_aux get_h_total_full.simps
+        get_hh_total_full.simps prod.inject)
+next
+  case (LetA x e A)
+  then show ?case
+    by (metis exhale_only_changes_total_state_aux get_h_total_full.simps
+        get_hh_total_full.simps prod.inject)
 qed (clarsimp simp add:red_exhale_simps; blast)+
 
 lemma red_exhale_preserves_typing :
@@ -1327,7 +1357,7 @@ proof (induction A arbitrary: \<omega>\<^sub>t \<omega>\<^sub>t' r)
     case (AccPredicate e es ep)
     from Atomic this show ?thesis by (simp)
   qed
-qed (simp add:red_exhale_simps red_pure_exp_a2t_mask)+
+qed (simp_all add:red_exhale_simps red_pure_exp_a2t_mask)+
 
 subsection \<open>red_inhale_set lemmas\<close>
 
@@ -2111,8 +2141,8 @@ lemma red_inhale_refines :
   assumes "assertion_typing (program_total ctxt) \<Lambda> A"
   assumes "a2t_state_wf ctxt (get_trace \<omega>)"
   assumes "valid_a2t_assert A"
-  shows  "Stable ({\<omega>} \<otimes> (\<langle>\<Delta>, declared_fields (program_total ctxt)\<rangle> \<Turnstile> \<langle>A\<rangle>)) \<and>
-     (\<forall> \<omega>'. stable (\<down>\<omega>') \<longrightarrow> (\<down>\<omega>') \<in> ({\<omega>} \<otimes> (\<langle>\<Delta>, declared_fields (program_total ctxt)\<rangle> \<Turnstile> \<langle>A\<rangle>)) \<longrightarrow> a2t_states ctxt (\<down>\<omega>') \<subseteq> red_inhale_set ctxt (\<lambda> _. True) A (a2t_states ctxt \<omega>))"
+  shows  "Stable ({\<omega>} \<otimes> (\<langle>\<Gamma>, \<Delta>, declared_fields (program_total ctxt)\<rangle> \<Turnstile> \<langle>A\<rangle>)) \<and>
+     (\<forall> \<omega>'. stable (\<down>\<omega>') \<longrightarrow> (\<down>\<omega>') \<in> ({\<omega>} \<otimes> (\<langle>\<Gamma>, \<Delta>, declared_fields (program_total ctxt)\<rangle> \<Turnstile> \<langle>A\<rangle>)) \<longrightarrow> a2t_states ctxt (\<down>\<omega>') \<subseteq> red_inhale_set ctxt (\<lambda> _. True) A (a2t_states ctxt \<omega>))"
   using assms(2-)
 proof (induction A arbitrary:\<omega>)
   case (Atomic a)
@@ -2298,22 +2328,22 @@ next
   then have "red_inhale_set_ok ctxt (\<lambda> _. True) A1 (a2t_states ctxt \<omega>)"
       "red_inhale_set_ok ctxt (\<lambda> _. True) A2 (red_inhale_set ctxt (\<lambda> _. True) A1 (a2t_states ctxt \<omega>))" using red_inhale_ok_StarE by blast+
   note calc = calc this
-  then have "Stable ({\<omega>} \<otimes> (\<langle>\<Delta>, declared_fields (program_total ctxt)\<rangle> \<Turnstile> \<langle>A1\<rangle>))"
+  then have "Stable ({\<omega>} \<otimes> (\<langle>\<Gamma>, \<Delta>, declared_fields (program_total ctxt)\<rangle> \<Turnstile> \<langle>A1\<rangle>))"
     using Star.IH(1)[of \<omega>] by (simp add:assertion_typing_simps)+
   note calc = calc this
-  then have "\<And> \<omega>'. stable (\<down>\<omega>') \<Longrightarrow> (\<down>\<omega>') \<in> {\<omega>} \<otimes> (\<langle>\<Delta>, declared_fields (program_total ctxt)\<rangle> \<Turnstile> \<langle>A1\<rangle>) \<Longrightarrow> a2t_states ctxt (\<down>\<omega>') \<subseteq> red_inhale_set ctxt (\<lambda> _. True) A1 (a2t_states ctxt \<omega>)"
+  then have "\<And> \<omega>'. stable (\<down>\<omega>') \<Longrightarrow> (\<down>\<omega>') \<in> {\<omega>} \<otimes> (\<langle>\<Gamma>, \<Delta>, declared_fields (program_total ctxt)\<rangle> \<Turnstile> \<langle>A1\<rangle>) \<Longrightarrow> a2t_states ctxt (\<down>\<omega>') \<subseteq> red_inhale_set ctxt (\<lambda> _. True) A1 (a2t_states ctxt \<omega>)"
     using Star.IH(1)[of \<omega>] by (simp add:assertion_typing_simps)+
   note H\<omega>' = this[of "\<up>_", simplified abs_state_to_from_record]
-  have Htyp: "\<And> \<omega>'. stable (\<omega>') \<Longrightarrow> (\<omega>') \<in> {\<omega>} \<otimes> (\<langle>\<Delta>, declared_fields (program_total ctxt)\<rangle> \<Turnstile> \<langle>A1\<rangle>) \<Longrightarrow> abs_state_typing ctxt \<Lambda> \<omega>'"
+  have Htyp: "\<And> \<omega>'. stable (\<omega>') \<Longrightarrow> (\<omega>') \<in> {\<omega>} \<otimes> (\<langle>\<Gamma>, \<Delta>, declared_fields (program_total ctxt)\<rangle> \<Turnstile> \<langle>A1\<rangle>) \<Longrightarrow> abs_state_typing ctxt \<Lambda> \<omega>'"
     apply (rule red_inhale_set_preserves_typing_a2t)
     using calc apply (simp)
     using calc apply (simp add:get_trace_in_star)
     by (rule H\<omega>'; assumption)
-  have Hok: "\<And> \<omega>'. stable (\<omega>') \<Longrightarrow> (\<omega>') \<in> {\<omega>} \<otimes> (\<langle>\<Delta>, declared_fields (program_total ctxt)\<rangle> \<Turnstile> \<langle>A1\<rangle>) \<Longrightarrow> red_inhale_set_ok ctxt (\<lambda> _. True) A2 (a2t_states ctxt \<omega>')"
+  have Hok: "\<And> \<omega>'. stable (\<omega>') \<Longrightarrow> (\<omega>') \<in> {\<omega>} \<otimes> (\<langle>\<Gamma>, \<Delta>, declared_fields (program_total ctxt)\<rangle> \<Turnstile> \<langle>A1\<rangle>) \<Longrightarrow> red_inhale_set_ok ctxt (\<lambda> _. True) A2 (a2t_states ctxt \<omega>')"
     apply (rule red_inhale_set_ok_mono)
      apply (rule H\<omega>'; assumption)
     using calc by (simp)
-  from calc have "Stable ({\<omega>} \<otimes> (\<langle>\<Delta>, declared_fields (program_total ctxt)\<rangle> \<Turnstile> \<langle>Star A1 A2\<rangle>))"
+  from calc have "Stable ({\<omega>} \<otimes> (\<langle>\<Gamma>, \<Delta>, declared_fields (program_total ctxt)\<rangle> \<Turnstile> \<langle>Star A1 A2\<rangle>))"
     apply (simp)
     apply (subst add_set_asso[symmetric])
     apply (rule Stable_star_singleton, assumption)
@@ -2346,7 +2376,7 @@ next
 next
   case (Exists x1a A)
   then show ?case by (simp)
-qed
+qed (simp_all)
 
 lemma red_inhale_is_stable :
   assumes "stable \<omega>"
@@ -2387,7 +2417,7 @@ lemma red_exhale_refines :
   assumes "assertion_typing (program_total ctxt) \<Lambda> A"
   assumes "a2t_state_wf ctxt (get_trace \<omega>)"
   assumes "valid_a2t_assert A"
-  shows  "\<exists> \<omega>'. \<omega> \<in> ({\<down>\<omega>'} \<otimes> (\<langle>\<Delta>, declared_fields (program_total ctxt)\<rangle> \<Turnstile> \<langle>A\<rangle>)) \<and> get_vh (get_state (\<down>\<omega>')) = get_vh (get_state \<omega>) \<and>
+  shows  "\<exists> \<omega>'. \<omega> \<in> ({\<down>\<omega>'} \<otimes> (\<langle>\<Gamma>, \<Delta>, declared_fields (program_total ctxt)\<rangle> \<Turnstile> \<langle>A\<rangle>)) \<and> get_vh (get_state (\<down>\<omega>')) = get_vh (get_state \<omega>) \<and>
      a2t_states ctxt (\<down>\<omega>') \<subseteq> red_exhale_set ctxt (\<lambda> _. True) (a2t_mask \<omega>) A (a2t_states ctxt \<omega>)"
   using assms(2-)
 proof (induction A arbitrary:\<omega>)
@@ -2590,23 +2620,14 @@ next
       apply (clarsimp) subgoal for \<omega>'
       apply (rule exI[of _ "\<omega>'"]; simp; rule conjI)
         subgoal
-          apply (subst add_set_commm[of "\<langle>_,_\<rangle> \<Turnstile> \<langle>A1\<rangle>"])
+          apply (subst add_set_commm[of "\<langle>_, _,_\<rangle> \<Turnstile> \<langle>A1\<rangle>"])
           apply (simp add:add_set_asso[symmetric])
           by (rule star_to_singletonI; assumption)
         apply (simp add:red_exhale_set_StarI)
         using red_exhale_set_mono by blast
       done
     done
-next
-  case (Wand A1 A2)
-  then show ?case by (simp)
-next
-  case (ForAll x1a A)
-  then show ?case by (simp)
-next
-  case (Exists x1a A)
-  then show ?case by (simp)
-qed
+qed (simp_all)
 
 subsection \<open>Refinement proof\<close>
 
@@ -2715,6 +2736,15 @@ proof (rule subsetI)
     by fastforce
 qed
 
+lemma valid_a2_assert_indep_pred_interp:
+  assumes "valid_a2t_assert A"
+  shows "sat_set \<Gamma> \<Delta> F A = sat_set \<Gamma>' \<Delta> F A"
+  using assms
+  apply (induct A arbitrary: )
+             apply simp_all
+  by presburger+
+
+
 theorem abstract_refines_total :
   assumes "R = (\<lambda> _. True)"
   (* TODO: substitute ctxt_to_interp ctxt for \<Delta> in this file instead of using this equality *)
@@ -2751,7 +2781,8 @@ next
     subgoal for \<omega>'
       apply (rule concrete_post_Exhale[where ?\<omega>'="\<down>\<omega>'"])
         apply (assumption)
-      subgoal by (clarsimp simp add:make_semantic_assertion_def)
+      subgoal using make_semantic_assertion_def valid_a2_assert_indep_pred_interp
+        by (metis snd_conv)
       apply (simp add:red_stmt_total_set_ExhaleI)
       apply (insert havoc_locs_state_a2t[of ctxt \<Lambda> "\<down>\<omega>'"])
       apply (drule red_exhale_set_preserves_typing_a2t; assumption?; (simp add:get_trace_in_star)?)

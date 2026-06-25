@@ -96,6 +96,10 @@ fun assert_pred :: "(assertion \<Rightarrow> bool) \<Rightarrow> (pure_exp atomi
 | "assert_pred_rec p_assert p_atm p_e (ForAll _ A) \<longleftrightarrow> assert_pred p_assert p_atm p_e A"
 | "assert_pred_rec p_assert p_atm p_e (Exists _ A) \<longleftrightarrow> assert_pred p_assert p_atm p_e A"
 | "assert_pred_rec p_assert p_atm p_e (Wand A B) \<longleftrightarrow> assert_pred p_assert p_atm p_e A \<and> assert_pred p_assert p_atm p_e B"
+| "assert_pred_rec p_assert p_atm p_e (LetA _ _ A) \<longleftrightarrow> assert_pred p_assert p_atm p_e A"
+| "assert_pred_rec p_assert p_atm p_e (InductivePred A) \<longleftrightarrow> assert_pred p_assert p_atm p_e A"
+| "assert_pred_rec p_assert p_atm p_e PredSymbol \<longleftrightarrow> True"
+
 
 declare assert_pred.simps[simp del]
 lemmas assert_pred_simps[simp] =
@@ -108,6 +112,9 @@ lemmas assert_pred_simps[simp] =
   assert_pred.simps[where ?A="ForAll _ _"]
   assert_pred.simps[where ?A="Exists _ _"]
   assert_pred.simps[where ?A="Wand _ _"]
+  assert_pred.simps[where ?A="LetA _ _ _"]
+  assert_pred.simps[where ?A="InductivePred _"]
+  assert_pred.simps[where ?A="PredSymbol"]
 
 fun stmt_pred :: "(stmt \<Rightarrow> bool) \<Rightarrow> (assertion \<Rightarrow> bool) \<Rightarrow> (pure_exp \<Rightarrow> bool) \<Rightarrow> stmt \<Rightarrow> bool" and
     stmt_pred_rec :: "(stmt \<Rightarrow> bool) \<Rightarrow> (assertion \<Rightarrow> bool) \<Rightarrow> (pure_exp \<Rightarrow> bool) \<Rightarrow> stmt \<Rightarrow> bool"
@@ -230,8 +237,10 @@ lemma supported_assertion_no_unfolding:
   shows "no_unfolding_assertion A"
   using assms
   apply (induction A)
-          apply (simp_all add: supported_pure_exp_no_unfolding)
-  by (metis atomic_assert_pred.elims(2) atomic_assert_pred.elims(3) atomic_assert_pred_rec.elims(3) atomic_assert_pred_rec.simps(1) atomic_assert_pred_rec.simps(3) supported_atomic_assert.simps(1) supported_atomic_assert.simps(2) supported_pure_exp_no_unfolding)
+             apply (simp_all add: supported_pure_exp_no_unfolding)
+  by (metis atomic_assert_pred.elims(1) atomic_assert_pred_rec.simps(1,3) supported_atomic_assert.elims(2)
+      supported_pure_exp_no_unfolding)
+
 
 subsection \<open>Free variables\<close>
 
@@ -271,5 +280,6 @@ fun free_var_assertion :: "assertion \<Rightarrow> var set"  where
 | "free_var_assertion (ForAll _ A) = free_var_assertion A"
 | "free_var_assertion (Exists _ A) = free_var_assertion A"
 | "free_var_assertion (Wand A B) = free_var_assertion A \<union> free_var_assertion B"
+| "free_var_assertion (InductivePred A) = free_var_assertion A"
 
 end

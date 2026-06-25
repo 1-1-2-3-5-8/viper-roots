@@ -154,7 +154,7 @@ lemma acc_Stable [simp] :
   apply (clarsimp simp add:acc_def)
   by (rule Stable_ex, rule Stable_star; simp)
 
-
+type_synonym 'v pred_interp = "'v equi_state set"
 
 fun atomic_assert :: "('v, ('v virtual_state)) interp \<Rightarrow> (field_name \<rightharpoonup> vtyp) \<Rightarrow> pure_exp atomic_assert \<Rightarrow> bool option \<Rightarrow> 'v equi_state set" where
   "atomic_assert \<Delta> F (Pure e) (Some b) = (\<Delta> \<turnstile> \<langle>e\<rangle> [\<Down>] Val (VBool b))"
@@ -162,18 +162,30 @@ fun atomic_assert :: "('v, ('v virtual_state)) interp \<Rightarrow> (field_name 
       (case ep of Wildcard \<Rightarrow> \<llangle>p = None\<rrangle> | PureExp ep \<Rightarrow> \<Union> p'. (\<Delta> \<turnstile> \<langle>ep\<rangle> [\<Down>] Val (VPerm p')) \<otimes> \<llangle>p = Some p'\<rrangle>) \<otimes>
       acc \<Delta> ty r f p)"
 
-fun sat_set :: "('a, 'a virtual_state) ValueAndBasicState.interp \<Rightarrow> (field_name \<rightharpoonup> vtyp)
-     \<Rightarrow> (pure_exp, pure_exp atomic_assert) assert \<Rightarrow> 'a equi_state set" ("\<langle>_, _\<rangle> \<Turnstile> ((\<langle>_\<rangle>))" [0,0,0] 84) where
-  "\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>Atomic A\<rangle> = atomic_assert \<Delta> F A (Some True)"
-| "\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>Imp b A\<rangle> = (\<Union>v. (\<Delta> \<turnstile> \<langle>b\<rangle> [\<Down>] Val (VBool v)) \<otimes> (if v = True then (\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle>) else emp))"
-| "(\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>CondAssert b A B\<rangle>) = (\<Union>v. (\<Delta> \<turnstile> \<langle>b\<rangle> [\<Down>] Val (VBool v)) \<otimes>
-     (if v = True then (\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle>) else (\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>B\<rangle>)))"
-| "(\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>A && B\<rangle>) = ((\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle>) \<otimes> (\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>B\<rangle>))"
-| "(\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>A --* B\<rangle>) = (Set.filter (\<lambda>\<omega>. heap_typed (make_semantic_heap_tc \<Delta> F) (get_h \<omega>)) (\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle>) --\<otimes> ((\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>B\<rangle>) \<otimes> UNIV))"
-(* | "\<Delta> \<Turnstile> \<langle>ForAll ty A\<rangle> \<longleftrightarrow> (\<forall>v \<in> set_from_type (domains \<Delta>) ty. \<Delta> \<Turnstile> \<langle>A; shift_and_add_equi_state \<omega> v\<rangle>)" *)
-| "\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>Exists ty A\<rangle> = { \<omega>. \<exists>v \<in> set_from_type (domains \<Delta>) ty. shift_and_add_equi_state \<omega> v \<in> \<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle> }"
-| "(\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>ImpureAnd A B\<rangle>) = \<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle> \<inter> \<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>B\<rangle>"
-| "(\<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>ImpureOr A B\<rangle>) = \<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle> \<union> \<langle>\<Delta>, F\<rangle> \<Turnstile> \<langle>B\<rangle>"
+fun sat_set :: "'a pred_interp \<Rightarrow> ('a, 'a virtual_state) ValueAndBasicState.interp \<Rightarrow> (field_name \<rightharpoonup> vtyp)
+     \<Rightarrow> (pure_exp, pure_exp atomic_assert) assert \<Rightarrow> 'a equi_state set" ("\<langle>_, _, _\<rangle> \<Turnstile> ((\<langle>_\<rangle>))" [0,0,0] 84) where
+  "\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>Atomic A\<rangle> = atomic_assert \<Delta> F A (Some True)"
+| "\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>Imp b A\<rangle> = (\<Union>v. (\<Delta> \<turnstile> \<langle>b\<rangle> [\<Down>] Val (VBool v)) \<otimes> (if v = True then (\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle>) else emp))"
+| "(\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>CondAssert b A B\<rangle>) = (\<Union>v. (\<Delta> \<turnstile> \<langle>b\<rangle> [\<Down>] Val (VBool v)) \<otimes>
+     (if v = True then (\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle>) else (\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>B\<rangle>)))"
+| "(\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>A && B\<rangle>) = ((\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle>) \<otimes> (\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>B\<rangle>))"
+| "(\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>A --* B\<rangle>) = (Set.filter (\<lambda>\<omega>. heap_typed (make_semantic_heap_tc \<Delta> F) (get_h \<omega>)) (\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle>) --\<otimes> ((\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>B\<rangle>) \<otimes> UNIV))"
+| "\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>ForAll ty A\<rangle> = { \<omega>. \<forall>v \<in> set_from_type (domains \<Delta>) ty. shift_and_add_equi_state \<omega> v \<in> \<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle> }"
+| "\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>Exists ty A\<rangle> = { \<omega>. \<exists>v \<in> set_from_type (domains \<Delta>) ty. shift_and_add_equi_state \<omega> v \<in> \<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle> }"
+| "(\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>ImpureAnd A B\<rangle>) = \<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle> \<inter> \<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>B\<rangle>"
+| "(\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>ImpureOr A B\<rangle>) = \<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle> \<union> \<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>B\<rangle>"
+
+\<comment> \<open>New for the sound state encodings framework\<close>
+| "\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>InductivePred A\<rangle> = lfp (\<lambda>\<Gamma>. \<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle>)"
+| "\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>LetA x e A\<rangle> = { \<omega> |\<omega> v. \<Delta> \<turnstile> \<langle>e; \<omega>\<rangle> [\<Down>] Val v \<and> set_store \<omega> ((get_store \<omega>)(x \<mapsto> v)) \<in> \<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle> }"
+| "\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>PredSymbol\<rangle> = \<Gamma>"
+
+(*
+
+list(x) can be defined as
+InductivePred (x != null \<Rightarrow> acc(x.val) && acc(x.next) && (LetA x := x.next in PredSymbol)))
+
+*)
 
 
 datatype 'a custom =
@@ -1022,7 +1034,9 @@ lemma Stable_well_typedly :
 definition make_semantic_assertion
   :: "('a, 'a virtual_state) interp \<Rightarrow> ((var \<rightharpoonup> vtyp) \<times> (field_name \<rightharpoonup> vtyp)) \<Rightarrow> (pure_exp, pure_exp atomic_assert) assert \<Rightarrow> 'a equi_state set"
   where
-  "make_semantic_assertion \<Delta> F A = (\<langle>\<Delta>, snd F\<rangle> \<Turnstile> \<langle>A\<rangle>)"
+  "make_semantic_assertion \<Delta> F A = (\<langle>{}, \<Delta>, snd F\<rangle> \<Turnstile> \<langle>A\<rangle>)"
+\<comment> \<open>PredSymbol is false if not bound\<close>
+
 
 fun compile (* :: "('a, 'a virtual_state) interp \<Rightarrow> (field_name \<rightharpoonup> vtyp) \<Rightarrow> stmt \<Rightarrow> ('a equi_state, 'a val, 'a custom) abs_stmt" *)
   where
