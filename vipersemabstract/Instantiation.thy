@@ -176,7 +176,7 @@ fun sat_set :: "'a pred_interp \<Rightarrow> ('a, 'a virtual_state) ValueAndBasi
 | "(\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>ImpureOr A B\<rangle>) = \<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle> \<union> \<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>B\<rangle>"
 
 \<comment> \<open>New for the sound state encodings framework\<close>
-| "\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>InductivePred A\<rangle> = lfp (\<lambda>\<Gamma>. \<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle>)"
+| "\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>InductivePred A\<rangle> = lfp (\<lambda>\<Gamma>. \<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle> \<otimes> UNIV)"
 | "\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>LetA x e A\<rangle> = { \<omega> |\<omega> v. \<Delta> \<turnstile> \<langle>e; \<omega>\<rangle> [\<Down>] Val v \<and> set_store \<omega> ((get_store \<omega>)(x \<mapsto> v)) \<in> \<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>A\<rangle> }"
 | "\<langle>\<Gamma>, \<Delta>, F\<rangle> \<Turnstile> \<langle>PredSymbol\<rangle> = \<Gamma>"
 
